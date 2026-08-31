@@ -72,7 +72,7 @@ export default function AovOverTimeChart() {
       </p>
       <div className="flex items-baseline gap-2 mb-4">
         <span className="text-2xl font-bold text-gray-900">₹6,307.93</span>
-        <span className="text-xs font-semibold text-emerald-600">↑ 4.0%</span>
+        <span className="text-xs font-semibold text-gray-700">↑ 4.0%</span>
       </div>
 
       <ResponsiveContainer width="100%" height={220}>

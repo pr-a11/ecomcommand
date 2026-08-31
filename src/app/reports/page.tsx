@@ -29,7 +29,7 @@ const recentReports = [
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Sales: 'bg-emerald-100 text-emerald-700',
+  Sales: 'bg-gray-100 text-gray-700',
   Marketing: 'bg-pink-100 text-pink-700',
   Operations: 'bg-blue-100 text-blue-700',
   Customers: 'bg-purple-100 text-purple-700',
@@ -175,13 +175,13 @@ export default function ReportsPage() {
           <div className="divide-y divide-gray-50">
             {scheduledReports.map((report, i) => (
               <div key={i} className="px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${report.active ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${report.active ? 'bg-gray-900' : 'bg-gray-300'}`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900">{report.name}</p>
                   <p className="text-xs text-gray-400">{report.frequency} · {report.recipients}</p>
                 </div>
                 <span className="text-xs bg-gray-100 text-gray-600 font-semibold px-2 py-0.5 rounded">{report.format}</span>
-                <button className={`text-xs font-semibold px-3 py-1 rounded-lg transition-colors ${report.active ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
+                <button className={`text-xs font-semibold px-3 py-1 rounded-lg transition-colors ${report.active ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                   {report.active ? 'Pause' : 'Resume'}
                 </button>
               </div>

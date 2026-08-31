@@ -67,7 +67,7 @@ export default function ChannelSessionsTable() {
                 </td>
                 <td className="py-2.5 text-right">
                   <span className={`text-xs font-700 px-2 py-0.5 rounded-full ${
-                    row.convRate >= 1.8 ? 'bg-green-50 text-primary' :
+                    row.convRate >= 1.8 ? 'bg-gray-100 text-primary' :
                     row.convRate >= 1.4 ? 'bg-amber-50 text-amber-700': 'bg-red-50 text-negative'
                   }`}>
                     {row.convRate}%

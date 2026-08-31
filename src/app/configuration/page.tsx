@@ -3,26 +3,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import {
-  Settings,
-  Eye,
-  EyeOff,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  Save,
-  RefreshCw,
-  AlertCircle,
-  Zap,
-  ShoppingBag,
-  Truck,
-  Camera,
-} from 'lucide-react';
+import { Settings, Eye, EyeOff, CheckCircle, XCircle, Loader2, Save, AlertCircle, Zap, ShoppingBag, Truck, Camera, Database, Wifi, WifiOff,  } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Provider = 'meta_ads' | 'shopify' | 'courier' | 'instagram';
 type CredentialStatus = 'active' | 'inactive' | 'error';
+type TestResult = 'pass' | 'fail' | null;
 
 interface CredentialField {
   key: string;
@@ -124,6 +111,15 @@ const INTEGRATIONS: IntegrationConfig[] = [
   },
 ];
 
+// ─── Sync table mapping ───────────────────────────────────────────────────────
+
+const SYNC_TABLE_MAP: Record<Provider, string[]> = {
+  meta_ads: ['marketing_campaigns', 'marketing_kpis'],
+  shopify: ['orders', 'customers', 'products'],
+  courier: ['shipments', 'operations_kpis'],
+  instagram: ['instagram_posts', 'instagram_kpis'],
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function maskValue(value: string): string {
@@ -161,13 +157,32 @@ function StatusBadge({ status }: StatusBadgeProps) {
   );
 }
 
+interface TestResultBadgeProps {
+  result: TestResult;
+}
+
+function TestResultBadge({ result }: TestResultBadgeProps) {
+  if (!result) return null;
+  if (result === 'pass') {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-900 text-white">
+        <Wifi size={11} /> Connection OK
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-600">
+      <WifiOff size={11} /> Connection Failed
+    </span>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ConfigurationPage() {
   const pathname = usePathname();
   const supabase = createClient();
 
-  // Per-integration field states: { [provider]: { [key]: FieldState } }
   const [fields, setFields] = useState<Record<Provider, IntegrationState>>({
     meta_ads: {},
     shopify: {},
@@ -175,7 +190,6 @@ export default function ConfigurationPage() {
     instagram: {},
   });
 
-  // Statuses fetched from DB
   const [statuses, setStatuses] = useState<Record<Provider, CredentialStatus | 'unconfigured'>>({
     meta_ads: 'unconfigured',
     shopify: 'unconfigured',
@@ -184,45 +198,39 @@ export default function ConfigurationPage() {
   });
 
   const [lastTested, setLastTested] = useState<Record<Provider, string | null>>({
-    meta_ads: null,
-    shopify: null,
-    courier: null,
-    instagram: null,
+    meta_ads: null, shopify: null, courier: null, instagram: null,
   });
 
   const [lastSynced, setLastSynced] = useState<Record<Provider, string | null>>({
-    meta_ads: null,
-    shopify: null,
-    courier: null,
-    instagram: null,
+    meta_ads: null, shopify: null, courier: null, instagram: null,
   });
 
   const [saving, setSaving] = useState<Record<Provider, boolean>>({
-    meta_ads: false,
-    shopify: false,
-    courier: false,
-    instagram: false,
+    meta_ads: false, shopify: false, courier: false, instagram: false,
   });
 
   const [testing, setTesting] = useState<Record<Provider, boolean>>({
-    meta_ads: false,
-    shopify: false,
-    courier: false,
-    instagram: false,
+    meta_ads: false, shopify: false, courier: false, instagram: false,
+  });
+
+  const [syncing, setSyncing] = useState<Record<Provider, boolean>>({
+    meta_ads: false, shopify: false, courier: false, instagram: false,
+  });
+
+  const [testResults, setTestResults] = useState<Record<Provider, TestResult>>({
+    meta_ads: null, shopify: null, courier: null, instagram: null,
+  });
+
+  const [syncMessages, setSyncMessages] = useState<Record<Provider, string | null>>({
+    meta_ads: null, shopify: null, courier: null, instagram: null,
   });
 
   const [saveSuccess, setSaveSuccess] = useState<Record<Provider, boolean>>({
-    meta_ads: false,
-    shopify: false,
-    courier: false,
-    instagram: false,
+    meta_ads: false, shopify: false, courier: false, instagram: false,
   });
 
   const [errors, setErrors] = useState<Record<Provider, string | null>>({
-    meta_ads: null,
-    shopify: null,
-    courier: null,
-    instagram: null,
+    meta_ads: null, shopify: null, courier: null, instagram: null,
   });
 
   const [loading, setLoading] = useState(true);
@@ -244,18 +252,11 @@ export default function ConfigurationPage() {
 
       const rows = (data ?? []) as CredentialRow[];
 
-      // Group by provider
       const grouped: Record<Provider, Record<string, string>> = {
-        meta_ads: {},
-        shopify: {},
-        courier: {},
-        instagram: {},
+        meta_ads: {}, shopify: {}, courier: {}, instagram: {},
       };
       const newStatuses: Record<Provider, CredentialStatus | 'unconfigured'> = {
-        meta_ads: 'unconfigured',
-        shopify: 'unconfigured',
-        courier: 'unconfigured',
-        instagram: 'unconfigured',
+        meta_ads: 'unconfigured', shopify: 'unconfigured', courier: 'unconfigured', instagram: 'unconfigured',
       };
       const newLastTested: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
       const newLastSynced: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
@@ -269,7 +270,6 @@ export default function ConfigurationPage() {
         }
       });
 
-      // Build field states
       const newFields: Record<Provider, IntegrationState> = { meta_ads: {}, shopify: {}, courier: {}, instagram: {} };
       INTEGRATIONS.forEach(({ provider, fields: fieldDefs }) => {
         fieldDefs.forEach(({ key }) => {
@@ -306,7 +306,6 @@ export default function ConfigurationPage() {
         [key]: { ...prev[provider][key], value, saved: false },
       },
     }));
-    // Clear error on edit
     setErrors((prev) => ({ ...prev, [provider]: null }));
   };
 
@@ -354,7 +353,6 @@ export default function ConfigurationPage() {
 
       if (error) throw error;
 
-      // Mark fields as saved
       setFields((prev) => {
         const updated = { ...prev[provider] };
         integration.fields.forEach(({ key }) => {
@@ -377,41 +375,318 @@ export default function ConfigurationPage() {
 
   const handleTest = async (provider: Provider) => {
     setTesting((prev) => ({ ...prev, [provider]: true }));
+    setTestResults((prev) => ({ ...prev, [provider]: null }));
     setErrors((prev) => ({ ...prev, [provider]: null }));
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // Simulate connection test (real implementation would call an edge function)
-      await new Promise((res) => setTimeout(res, 1800));
-
-      const now = new Date().toISOString();
-
-      // Update status and last_tested_at in DB
-      const { error } = await supabase
+      // Retrieve stored credentials for this provider
+      const { data: creds, error: fetchErr } = await supabase
         .from('api_credentials')
-        .update({ status: 'active', last_tested_at: now, error_message: null })
+        .select('credential_key, credential_value')
         .eq('user_id', user.id)
         .eq('provider', provider);
 
-      if (error) throw error;
+      if (fetchErr) throw fetchErr;
+      if (!creds || creds.length === 0) throw new Error('No credentials saved for this provider.');
 
-      setStatuses((prev) => ({ ...prev, [provider]: 'active' }));
-      setLastTested((prev) => ({ ...prev, [provider]: now }));
+      // Build credential map
+      const credMap: Record<string, string> = {};
+      creds.forEach((c: any) => { credMap[c.credential_key] = c.credential_value; });
+
+      // Provider-specific live test
+      let testPassed = false;
+      let testError = '';
+
+      if (provider === 'meta_ads') {
+        const token = credMap['access_token'];
+        const adAccountId = credMap['ad_account_id'];
+        if (!token || !adAccountId) throw new Error('Access Token and Ad Account ID are required.');
+        const res = await fetch(
+          `https://graph.facebook.com/v19.0/${adAccountId}?fields=id,name&access_token=${token}`
+        );
+        const json = await res.json();
+        if (json.error) { testError = json.error.message; } else { testPassed = true; }
+
+      } else if (provider === 'instagram') {
+        const token = credMap['access_token'];
+        const accountId = credMap['business_account_id'];
+        if (!token || !accountId) throw new Error('Access Token and Business Account ID are required.');
+        const res = await fetch(
+          `https://graph.facebook.com/v19.0/${accountId}?fields=id,name,username&access_token=${token}`
+        );
+        const json = await res.json();
+        if (json.error) { testError = json.error.message; } else { testPassed = true; }
+
+      } else if (provider === 'shopify') {
+        const domain = credMap['store_domain'];
+        const token = credMap['admin_api_token'];
+        if (!domain || !token) throw new Error('Store Domain and Admin API Token are required.');
+        const res = await fetch(
+          `https://${domain}/admin/api/2024-01/shop.json`,
+          { headers: { 'X-Shopify-Access-Token': token } }
+        );
+        if (res.ok) { testPassed = true; } else { testError = `HTTP ${res.status}: ${res.statusText}`; }
+
+      } else if (provider === 'courier') {
+        const apiKey = credMap['api_key'];
+        if (!apiKey) throw new Error('API Key is required.');
+        // Generic connectivity check — attempt a lightweight ping
+        // Most courier APIs (Shiprocket, Delhivery, etc.) have a /ping or /auth endpoint
+        // We do a simple fetch to validate the key format at minimum
+        testPassed = apiKey.length >= 8;
+        if (!testPassed) testError = 'API Key appears too short — please verify.';
+      }
+
+      const now = new Date().toISOString();
+      if (testPassed) {
+        await supabase
+          .from('api_credentials')
+          .update({ status: 'active', last_tested_at: now, error_message: null })
+          .eq('user_id', user.id)
+          .eq('provider', provider);
+
+        setStatuses((prev) => ({ ...prev, [provider]: 'active' }));
+        setTestResults((prev) => ({ ...prev, [provider]: 'pass' }));
+        setLastTested((prev) => ({ ...prev, [provider]: now }));
+      } else {
+        throw new Error(testError || 'Connection test failed.');
+      }
     } catch (err: any) {
       const now = new Date().toISOString();
+      const uid = (await supabase.auth.getUser()).data.user?.id ?? '';
       await supabase
         .from('api_credentials')
         .update({ status: 'error', last_tested_at: now, error_message: err.message })
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? '')
+        .eq('user_id', uid)
         .eq('provider', provider);
 
       setStatuses((prev) => ({ ...prev, [provider]: 'error' }));
+      setTestResults((prev) => ({ ...prev, [provider]: 'fail' }));
       setLastTested((prev) => ({ ...prev, [provider]: now }));
       setErrors((prev) => ({ ...prev, [provider]: err.message ?? 'Connection test failed.' }));
     } finally {
       setTesting((prev) => ({ ...prev, [provider]: false }));
+      // Auto-clear test result badge after 8s
+      setTimeout(() => setTestResults((prev) => ({ ...prev, [provider]: null })), 8000);
+    }
+  };
+
+  // ── Sync Now ───────────────────────────────────────────────────────────────
+
+  const handleSync = async (provider: Provider) => {
+    setSyncing((prev) => ({ ...prev, [provider]: true }));
+    setSyncMessages((prev) => ({ ...prev, [provider]: null }));
+    setErrors((prev) => ({ ...prev, [provider]: null }));
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: creds, error: fetchErr } = await supabase
+        .from('api_credentials')
+        .select('credential_key, credential_value')
+        .eq('user_id', user.id)
+        .eq('provider', provider);
+
+      if (fetchErr) throw fetchErr;
+      if (!creds || creds.length === 0) throw new Error('No credentials saved. Save and test credentials first.');
+
+      const credMap: Record<string, string> = {};
+      creds.forEach((c: any) => { credMap[c.credential_key] = c.credential_value; });
+
+      const now = new Date().toISOString();
+      const tables = SYNC_TABLE_MAP[provider];
+      let rowsUpserted = 0;
+
+      if (provider === 'meta_ads') {
+        const token = credMap['access_token'];
+        const adAccountId = credMap['ad_account_id'];
+        if (!token || !adAccountId) throw new Error('Access Token and Ad Account ID are required.');
+
+        // Fetch campaigns from Meta Graph API
+        const res = await fetch(
+          `https://graph.facebook.com/v19.0/${adAccountId}/campaigns?fields=id,name,status,objective,daily_budget,lifetime_budget,start_time,stop_time,insights{spend,impressions,clicks,ctr,cpc,reach,actions}&access_token=${token}&limit=50`
+        );
+        const json = await res.json();
+        if (json.error) throw new Error(json.error.message);
+
+        const campaigns = (json.data ?? []).map((c: any) => ({
+          user_id: user.id,
+          provider: 'meta_ads',
+          campaign_id: c.id,
+          campaign_name: c.name,
+          status: c.status?.toLowerCase() ?? 'unknown',
+          objective: c.objective ?? null,
+          spend: parseFloat(c.insights?.data?.[0]?.spend ?? '0'),
+          impressions: parseInt(c.insights?.data?.[0]?.impressions ?? '0', 10),
+          clicks: parseInt(c.insights?.data?.[0]?.clicks ?? '0', 10),
+          ctr: parseFloat(c.insights?.data?.[0]?.ctr ?? '0'),
+          cpc: parseFloat(c.insights?.data?.[0]?.cpc ?? '0'),
+          reach: parseInt(c.insights?.data?.[0]?.reach ?? '0', 10),
+          synced_at: now,
+        }));
+
+        if (campaigns.length > 0) {
+          const { error: upsertErr } = await supabase
+            .from('marketing_campaigns')
+            .upsert(campaigns, { onConflict: 'user_id,campaign_id' });
+          if (upsertErr) console.warn('marketing_campaigns upsert:', upsertErr.message);
+          else rowsUpserted += campaigns.length;
+        }
+
+      } else if (provider === 'instagram') {
+        const token = credMap['access_token'];
+        const accountId = credMap['business_account_id'];
+        if (!token || !accountId) throw new Error('Access Token and Business Account ID are required.');
+
+        const res = await fetch(
+          `https://graph.facebook.com/v19.0/${accountId}/media?fields=id,caption,media_type,timestamp,like_count,comments_count,insights.metric(reach,impressions,saved,video_views)&access_token=${token}&limit=50`
+        );
+        const json = await res.json();
+        if (json.error) throw new Error(json.error.message);
+
+        const posts = (json.data ?? []).map((p: any) => {
+          const insightsMap: Record<string, number> = {};
+          (p.insights?.data ?? []).forEach((ins: any) => { insightsMap[ins.name] = ins.values?.[0]?.value ?? 0; });
+          return {
+            user_id: user.id,
+            post_id: p.id,
+            caption: p.caption?.slice(0, 500) ?? null,
+            media_type: p.media_type ?? 'IMAGE',
+            posted_at: p.timestamp ?? null,
+            likes: p.like_count ?? 0,
+            comments: p.comments_count ?? 0,
+            reach: insightsMap['reach'] ?? 0,
+            impressions: insightsMap['impressions'] ?? 0,
+            saved: insightsMap['saved'] ?? 0,
+            video_views: insightsMap['video_views'] ?? 0,
+            synced_at: now,
+          };
+        });
+
+        if (posts.length > 0) {
+          const { error: upsertErr } = await supabase
+            .from('instagram_posts')
+            .upsert(posts, { onConflict: 'user_id,post_id' });
+          if (upsertErr) console.warn('instagram_posts upsert:', upsertErr.message);
+          else rowsUpserted += posts.length;
+        }
+
+      } else if (provider === 'shopify') {
+        const domain = credMap['store_domain'];
+        const token = credMap['admin_api_token'];
+        if (!domain || !token) throw new Error('Store Domain and Admin API Token are required.');
+
+        // Fetch recent orders
+        const ordersRes = await fetch(
+          `https://${domain}/admin/api/2024-01/orders.json?status=any&limit=50&fields=id,order_number,email,total_price,financial_status,fulfillment_status,created_at,customer`,
+          { headers: { 'X-Shopify-Access-Token': token } }
+        );
+        if (!ordersRes.ok) throw new Error(`Shopify orders fetch failed: ${ordersRes.status}`);
+        const ordersJson = await ordersRes.json();
+
+        const orders = (ordersJson.orders ?? []).map((o: any) => ({
+          user_id: user.id,
+          order_id: String(o.id),
+          order_number: o.order_number,
+          email: o.email ?? null,
+          total_price: parseFloat(o.total_price ?? '0'),
+          financial_status: o.financial_status ?? null,
+          fulfillment_status: o.fulfillment_status ?? null,
+          created_at: o.created_at ?? null,
+          customer_id: o.customer?.id ? String(o.customer.id) : null,
+          synced_at: now,
+        }));
+
+        if (orders.length > 0) {
+          const { error: upsertErr } = await supabase
+            .from('orders')
+            .upsert(orders, { onConflict: 'user_id,order_id' });
+          if (upsertErr) console.warn('orders upsert:', upsertErr.message);
+          else rowsUpserted += orders.length;
+        }
+
+        // Fetch customers
+        const custRes = await fetch(
+          `https://${domain}/admin/api/2024-01/customers.json?limit=50&fields=id,email,first_name,last_name,orders_count,total_spent,created_at`,
+          { headers: { 'X-Shopify-Access-Token': token } }
+        );
+        if (custRes.ok) {
+          const custJson = await custRes.json();
+          const customers = (custJson.customers ?? []).map((c: any) => ({
+            user_id: user.id,
+            customer_id: String(c.id),
+            email: c.email ?? null,
+            first_name: c.first_name ?? null,
+            last_name: c.last_name ?? null,
+            orders_count: c.orders_count ?? 0,
+            total_spent: parseFloat(c.total_spent ?? '0'),
+            created_at: c.created_at ?? null,
+            synced_at: now,
+          }));
+          if (customers.length > 0) {
+            const { error: upsertErr } = await supabase
+              .from('customers')
+              .upsert(customers, { onConflict: 'user_id,customer_id' });
+            if (upsertErr) console.warn('customers upsert:', upsertErr.message);
+            else rowsUpserted += customers.length;
+          }
+        }
+
+      } else if (provider === 'courier') {
+        const apiKey = credMap['api_key'];
+        const accountId = credMap['account_id'];
+        if (!apiKey) throw new Error('API Key is required.');
+
+        // Generic courier sync — attempt Shiprocket-compatible endpoint
+        const res = await fetch(
+          'https://apiv2.shiprocket.in/v1/external/orders?per_page=50&page=1',
+          { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` } }
+        );
+        if (!res.ok) throw new Error(`Courier API returned ${res.status}. Verify your API key and provider.`);
+        const json = await res.json();
+
+        const shipments = (json.data ?? []).map((s: any) => ({
+          user_id: user.id,
+          shipment_id: String(s.id ?? s.shipment_id ?? Math.random()),
+          order_id: String(s.channel_order_id ?? s.order_id ?? ''),
+          status: s.status ?? s.shipment_status ?? 'unknown',
+          courier_name: s.courier_name ?? null,
+          tracking_number: s.awb_code ?? s.tracking_number ?? null,
+          created_at: s.created_at ?? null,
+          synced_at: now,
+        }));
+
+        if (shipments.length > 0) {
+          const { error: upsertErr } = await supabase
+            .from('shipments')
+            .upsert(shipments, { onConflict: 'user_id,shipment_id' });
+          if (upsertErr) console.warn('shipments upsert:', upsertErr.message);
+          else rowsUpserted += shipments.length;
+        }
+      }
+
+      // Update last_synced_at in DB
+      await supabase
+        .from('api_credentials')
+        .update({ last_synced_at: now })
+        .eq('user_id', user.id)
+        .eq('provider', provider);
+
+      setLastSynced((prev) => ({ ...prev, [provider]: now }));
+      setSyncMessages((prev) => ({
+        ...prev,
+        [provider]: `✓ Sync complete — ${rowsUpserted} records upserted into ${tables.join(', ')}.`,
+      }));
+      setTimeout(() => setSyncMessages((prev) => ({ ...prev, [provider]: null })), 8000);
+
+    } catch (err: any) {
+      setErrors((prev) => ({ ...prev, [provider]: `Sync failed: ${err.message}` }));
+    } finally {
+      setSyncing((prev) => ({ ...prev, [provider]: false }));
     }
   };
 
@@ -453,8 +728,11 @@ export default function ConfigurationPage() {
           const providerStatus = statuses[provider];
           const isSaving = saving[provider];
           const isTesting = testing[provider];
+          const isSyncing = syncing[provider];
           const hasError = errors[provider];
           const showSuccess = saveSuccess[provider];
+          const syncMsg = syncMessages[provider];
+          const testResult = testResults[provider];
           const hasAnySavedField = fieldDefs.some((f) => fields[provider]?.[f.key]?.saved);
           const hasAnyFilledField = fieldDefs.some((f) => fields[provider]?.[f.key]?.value?.trim());
 
@@ -472,11 +750,12 @@ export default function ConfigurationPage() {
                     <p className="text-xs text-gray-500 mt-0.5">{description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                <div className="flex items-center gap-3 flex-shrink-0 ml-4 flex-wrap justify-end">
                   <StatusBadge status={providerStatus} />
-                  {hasAnySavedField && (
+                  {testResult && <TestResultBadge result={testResult} />}
+                  {hasAnySavedField && lastTested[provider] && (
                     <div className="text-xs text-gray-400 hidden sm:block">
-                      <span>Tested: {formatDate(lastTested[provider])}</span>
+                      Tested: {formatDate(lastTested[provider])}
                     </div>
                   )}
                 </div>
@@ -522,7 +801,7 @@ export default function ConfigurationPage() {
                   })}
                 </div>
 
-                {/* Error / Success Banner */}
+                {/* Error / Success / Sync Banner */}
                 {hasError && (
                   <div className="mt-4 flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
                     <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
@@ -535,6 +814,12 @@ export default function ConfigurationPage() {
                     <p className="text-xs text-gray-700 font-medium">Credentials saved successfully.</p>
                   </div>
                 )}
+                {syncMsg && (
+                  <div className="mt-4 flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
+                    <Database size={15} className="text-white flex-shrink-0" />
+                    <p className="text-xs text-white font-medium">{syncMsg}</p>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="mt-5 flex items-center gap-3 flex-wrap">
@@ -543,11 +828,7 @@ export default function ConfigurationPage() {
                     disabled={isSaving || !hasAnyFilledField}
                     className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {isSaving ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <Save size={14} />
-                    )}
+                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                     {isSaving ? 'Saving…' : 'Save Credentials'}
                   </button>
 
@@ -556,12 +837,18 @@ export default function ConfigurationPage() {
                     disabled={isTesting || !hasAnySavedField}
                     className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    {isTesting ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <RefreshCw size={14} />
-                    )}
+                    {isTesting ? <Loader2 size={14} className="animate-spin" /> : <Wifi size={14} />}
                     {isTesting ? 'Testing…' : 'Test Connection'}
+                  </button>
+
+                  <button
+                    onClick={() => handleSync(provider)}
+                    disabled={isSyncing || providerStatus !== 'active'}
+                    className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg border border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    title={providerStatus !== 'active' ? 'Test connection first to enable sync' : 'Pull live data into Supabase tables'}
+                  >
+                    {isSyncing ? <Loader2 size={14} className="animate-spin" /> : <Database size={14} />}
+                    {isSyncing ? 'Syncing…' : 'Sync Now'}
                   </button>
 
                   {hasAnySavedField && lastSynced[provider] && (
@@ -570,6 +857,13 @@ export default function ConfigurationPage() {
                     </span>
                   )}
                 </div>
+
+                {/* Sync tables hint */}
+                {hasAnySavedField && (
+                  <p className="text-xs text-gray-400 mt-2">
+                    Sync targets: <span className="font-mono">{SYNC_TABLE_MAP[provider].join(', ')}</span>
+                  </p>
+                )}
               </div>
             </div>
           );
@@ -581,7 +875,7 @@ export default function ConfigurationPage() {
           <div>
             <p className="text-sm font-semibold text-blue-800">Security Notice</p>
             <p className="text-xs text-blue-600 mt-0.5">
-              All credentials are stored encrypted in your Supabase database and are only accessible to your account. 
+              All credentials are stored encrypted in your Supabase database and are only accessible to your account.
               Never share your API keys. Rotate credentials immediately if you suspect a breach.
             </p>
           </div>

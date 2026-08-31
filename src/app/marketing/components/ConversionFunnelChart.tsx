@@ -3,11 +3,11 @@ import React from 'react';
 import { useMarketingData } from '@/hooks/useMarketingData';
 import { Info } from 'lucide-react';
 
-const FUNNEL_COLORS = [
-  { fill: '#a78bfa', label: 'Sessions' },
-  { fill: '#818cf8', label: 'Add to Cart' },
-  { fill: '#f9a8d4', label: 'Checkouts' },
-  { fill: '#fbbf24', label: 'Purchases' },
+const FUNNEL_LAYERS = [
+  { fill: '#c4b5fd', label: 'Sessions', labelColor: '#5b21b6' },
+  { fill: '#a78bfa', label: 'Add to Cart', labelColor: '#4c1d95' },
+  { fill: '#f9a8d4', label: 'Checkouts', labelColor: '#9d174d' },
+  { fill: '#fcd34d', label: 'Purchases', labelColor: '#92400e' },
 ];
 
 export default function ConversionFunnelChart() {
@@ -25,23 +25,28 @@ export default function ConversionFunnelChart() {
   const checkoutToPurchase = data?.[2]?.value ? ((data?.[3]?.value / data?.[2]?.value) * 100)?.toFixed(2) : '0';
   const overall = data?.[0]?.value ? ((data?.[3]?.value / data?.[0]?.value) * 100)?.toFixed(2) : '0';
 
-  // SVG funnel dimensions
-  const svgWidth = 260;
-  const svgHeight = 200;
-  const topWidth = 220;
-  const bottomWidth = 60;
-  const layerHeight = svgHeight / data?.length;
-  const centerX = svgWidth / 2;
+  // SVG funnel — wider top, narrower bottom, matching reference
+  const svgW = 240;
+  const svgH = 220;
+  const n = data?.length ?? 4;
+  const gap = 3;
+  const layerH = (svgH - gap * (n - 1)) / n;
+  const topW = 200;
+  const botW = 48;
+  const cx = svgW / 2;
 
   const layers = data?.map((stage, i) => {
-    const topW = topWidth - (topWidth - bottomWidth) * (i / data?.length);
-    const botW = topWidth - (topWidth - bottomWidth) * ((i + 1) / data?.length);
-    const y = i * layerHeight;
-    const x1Top = centerX - topW / 2;
-    const x2Top = centerX + topW / 2;
-    const x1Bot = centerX - botW / 2;
-    const x2Bot = centerX + botW / 2;
-    return { x1Top, x2Top, x1Bot, x2Bot, y, stage, color: FUNNEL_COLORS?.[i] };
+    const t = i / n;
+    const b = (i + 1) / n;
+    const tw = topW - (topW - botW) * t;
+    const bw = topW - (topW - botW) * b;
+    const y = i * (layerH + gap);
+    return {
+      x1t: cx - tw / 2, x2t: cx + tw / 2,
+      x1b: cx - bw / 2, x2b: cx + bw / 2,
+      y, midY: y + layerH / 2,
+      stage, color: FUNNEL_LAYERS?.[i],
+    };
   });
 
   return (
@@ -53,55 +58,66 @@ export default function ConversionFunnelChart() {
       <p className="text-xs text-gray-400 mb-4">GA4 · Sessions → Cart → Checkout → Purchases</p>
 
       {/* Funnel SVG + Labels */}
-      <div className="flex items-center justify-center gap-4 flex-1">
-        {/* Left pct labels */}
-        <div className="flex flex-col justify-around" style={{ height: svgHeight }}>
-          {data?.map((stage, i) => (
-            <div key={stage?.stage} className="text-right">
-              <span className="text-xs text-gray-400 tabular-nums">
-                {i === 0 ? '100%' : `${((stage?.value / data?.[0]?.value) * 100)?.toFixed(1)}%`}
-              </span>
-            </div>
-          ))}
+      <div className="flex items-center justify-center gap-3 flex-1">
+        {/* Left % labels */}
+        <div className="flex flex-col gap-0" style={{ height: svgH }}>
+          {data?.map((stage, i) => {
+            const y = i * (layerH + gap);
+            const pct = i === 0 ? '100%' : `${((stage?.value / data?.[0]?.value) * 100)?.toFixed(1)}%`;
+            return (
+              <div
+                key={stage?.stage}
+                className="flex items-center justify-end"
+                style={{ height: layerH, marginBottom: i < n - 1 ? gap : 0 }}
+              >
+                <span className="text-[11px] text-gray-400 tabular-nums font-medium">{pct}</span>
+              </div>
+            );
+          })}
         </div>
 
         {/* SVG Funnel */}
-        <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+        <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
           <defs>
             {layers?.map((l, i) => (
-              <linearGradient key={i} id={`fg${i}`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient key={i} id={`fgl${i}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={l?.color?.fill} stopOpacity="1" />
-                <stop offset="100%" stopColor={l?.color?.fill} stopOpacity="0.75" />
+                <stop offset="100%" stopColor={l?.color?.fill} stopOpacity="0.82" />
               </linearGradient>
             ))}
           </defs>
           {layers?.map((l, i) => (
             <g key={i}>
               <polygon
-                points={`${l?.x1Top},${l?.y} ${l?.x2Top},${l?.y} ${l?.x2Bot},${l?.y + layerHeight - 2} ${l?.x1Bot},${l?.y + layerHeight - 2}`}
-                fill={`url(#fg${i})`}
+                points={`${l?.x1t},${l?.y} ${l?.x2t},${l?.y} ${l?.x2b},${l?.y + layerH} ${l?.x1b},${l?.y + layerH}`}
+                fill={`url(#fgl${i})`}
+                rx="2"
               />
               {/* Value label */}
               <text
-                x={centerX}
-                y={l?.y + layerHeight / 2 + 4}
+                x={cx}
+                y={l?.midY + 5}
                 textAnchor="middle"
-                fontSize="11"
+                fontSize="12"
                 fontWeight="700"
-                fill="white"
+                fill={l?.color?.labelColor}
               >
-                {stage?.value?.toLocaleString('en-IN')}
+                {l?.stage?.value?.toLocaleString('en-IN')}
               </text>
             </g>
           ))}
         </svg>
 
         {/* Right stage labels */}
-        <div className="flex flex-col justify-around" style={{ height: svgHeight }}>
-          {FUNNEL_COLORS?.map((c, i) => (
-            <div key={c?.label} className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: c?.fill }} />
-              <span className="text-xs font-medium text-gray-600 whitespace-nowrap">{c?.label}</span>
+        <div className="flex flex-col gap-0" style={{ height: svgH }}>
+          {FUNNEL_LAYERS?.map((c, i) => (
+            <div
+              key={c?.label}
+              className="flex items-center gap-1.5"
+              style={{ height: layerH, marginBottom: i < n - 1 ? gap : 0 }}
+            >
+              <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: c?.fill }} />
+              <span className="text-[11px] font-medium text-gray-600 whitespace-nowrap">{c?.label}</span>
             </div>
           ))}
         </div>
@@ -116,7 +132,7 @@ export default function ConversionFunnelChart() {
           { label: 'OVERALL CONV', value: `${overall}%`, color: 'text-gray-700' },
         ]?.map((stat) => (
           <div key={stat?.label} className="text-center">
-            <p className="text-xs text-gray-400 mb-0.5">{stat?.label}</p>
+            <p className="text-[10px] text-gray-400 mb-0.5">{stat?.label}</p>
             <p className={`text-sm font-bold tabular-nums ${stat?.color}`}>{stat?.value}</p>
           </div>
         ))}

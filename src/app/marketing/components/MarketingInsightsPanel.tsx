@@ -8,7 +8,7 @@ import { Sparkles, TrendingUp, AlertTriangle, Activity, Lightbulb } from 'lucide
 const insightConfig = {
   best: {
     icon: <TrendingUp size={16} />,
-    iconBg: 'bg-green-100',
+    iconBg: 'bg-gray-100',
     iconColor: 'text-primary',
     labelColor: 'text-primary',
     cardClass: 'insight-best',

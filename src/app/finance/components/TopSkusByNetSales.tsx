@@ -34,7 +34,7 @@ export default function TopSkusByNetSales() {
       {/* Legend */}
       <div className="flex items-center gap-4 mb-4">
         <div className="flex items-center gap-1.5">
-          <span className="w-3 h-2 rounded-sm bg-emerald-500 inline-block" />
+          <span className="w-3 h-2 rounded-sm bg-gray-900 inline-block" />
           <span className="text-xs text-gray-500">Shopify</span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -64,7 +64,7 @@ export default function TopSkusByNetSales() {
             <div className="space-y-1">
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                  className="h-full bg-gray-900 rounded-full transition-all duration-700"
                   style={{ width: `${(sku?.shopify / maxBar) * 100}%` }}
                 />
               </div>

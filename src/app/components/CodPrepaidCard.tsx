@@ -78,9 +78,9 @@ export default function CodPrepaidCard() {
         </div>
 
         {/* PREPAID */}
-        <div className="border border-emerald-200 bg-emerald-50/40 rounded-lg p-4 relative">
+        <div className="border border-gray-200 bg-gray-50/40 rounded-lg p-4 relative">
           <div className="absolute top-3 right-3">
-            <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+            <span className="text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full">
               HIGHER MARGIN
             </span>
           </div>
@@ -92,13 +92,13 @@ export default function CodPrepaidCard() {
           </p>
           <div className="flex gap-4 mt-2 mb-3">
             <div>
-              <p className="text-xs text-gray-500">Share of sales: <span className="font-semibold text-emerald-700">{PREPAID_DATA?.shareOfSales}%</span></p>
+              <p className="text-xs text-gray-500">Share of sales: <span className="font-semibold text-gray-800">{PREPAID_DATA?.shareOfSales}%</span></p>
             </div>
             <div>
-              <p className="text-xs text-gray-500">Share of orders: <span className="font-semibold text-emerald-700">{PREPAID_DATA?.shareOfOrders}%</span></p>
+              <p className="text-xs text-gray-500">Share of orders: <span className="font-semibold text-gray-800">{PREPAID_DATA?.shareOfOrders}%</span></p>
             </div>
           </div>
-          <div className="space-y-2 border-t border-emerald-100 pt-3">
+          <div className="space-y-2 border-t border-gray-200 pt-3">
             <div className="flex justify-between text-xs">
               <span className="text-gray-500">Net Sales</span>
               <span className="font-semibold text-gray-800">{formatINR(PREPAID_DATA?.netSalesVal)}</span>
@@ -107,7 +107,7 @@ export default function CodPrepaidCard() {
               <span className="text-gray-500">– COGS</span>
               <span className="font-semibold text-gray-800">{formatINR(PREPAID_DATA?.cogs)}</span>
             </div>
-            <div className="flex justify-between text-xs font-semibold border-t border-emerald-100 pt-2">
+            <div className="flex justify-between text-xs font-semibold border-t border-gray-200 pt-2">
               <span className="text-gray-700">Net margin</span>
               <span className="text-gray-900">{formatINR(PREPAID_DATA?.netMargin)}</span>
             </div>
