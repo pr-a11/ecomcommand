@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { Info } from 'lucide-react';
+import { Info, Eye, Bookmark, Heart, MessageCircle, Share2, Play, Image as ImageIcon } from 'lucide-react';
 
 // ── KPI Card ──────────────────────────────────────────────────────────────────
 function KpiCard({
@@ -44,7 +44,7 @@ function KpiCard({
       <p className="text-2xl font-bold text-gray-900 mb-1">{formatted}</p>
       <span
         className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
-          isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+          isPositive ? 'bg-gray-100 text-gray-700' : 'bg-red-50 text-red-600'
         }`}
       >
         {isPositive ? '↑' : '↓'} {Math.abs(change)}%
@@ -81,6 +81,96 @@ const engagementData = Array.from({ length: 17 }, (_, i) => {
   };
 });
 
+// ── Content Performance mock data ─────────────────────────────────────────────
+const CONTENT_POSTS = [
+  { id: 1, type: 'Post', date: '2026-08-16', engRate: 9.8, reach: 33900, saves: 709, likes: 2400, comments: 52, shares: 108, views: 43700 },
+  { id: 2, type: 'Reel', date: '2026-08-10', engRate: 9.2, reach: 25500, saves: 375, likes: 1700, comments: 53, shares: 190, views: 22300 },
+  { id: 3, type: 'Post', date: '2026-08-07', engRate: 11.3, reach: 22700, saves: 257, likes: 2100, comments: 67, shares: 98, views: 39600 },
+  { id: 4, type: 'Post', date: '2026-08-13', engRate: 11.6, reach: 14100, saves: 192, likes: 1300, comments: 10, shares: 85, views: 20600 },
+  { id: 5, type: 'Post', date: '2026-08-04', engRate: 15.1, reach: 9300, saves: 198, likes: 1100, comments: 22, shares: 95, views: 20000 },
+];
+
+function formatNum(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
+  return n.toString();
+}
+
+function ContentPostCard({ post }: { post: typeof CONTENT_POSTS[0] }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex-shrink-0 w-[220px]">
+      {/* Type badge */}
+      <div className="relative">
+        <div className="absolute top-2 left-2 z-10">
+          <span className="inline-flex items-center gap-1 bg-gray-800/80 text-white text-xs font-semibold px-2 py-0.5 rounded-md">
+            {post.type === 'Reel' ? <Play size={10} fill="white" /> : <ImageIcon size={10} />}
+            {post.type}
+          </span>
+        </div>
+        {/* Thumbnail placeholder */}
+        <div className="h-[160px] bg-gray-100 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-1 text-gray-300">
+            <ImageIcon size={28} strokeWidth={1.5} />
+          </div>
+        </div>
+      </div>
+
+      {/* Date + Engagement */}
+      <div className="px-3 pt-2.5 pb-1 flex items-center justify-between">
+        <span className="text-xs text-gray-500">{post.date}</span>
+        <span className="inline-flex items-center gap-0.5 text-xs font-bold text-gray-800">
+          <span className="text-gray-400">↗</span> {post.engRate}% ENG
+        </span>
+      </div>
+
+      {/* Stats grid */}
+      <div className="px-3 pb-3 grid grid-cols-2 gap-x-2 gap-y-1.5">
+        <div className="flex items-center gap-1">
+          <Eye size={11} className="text-gray-400 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-gray-800 leading-none">{formatNum(post.reach)}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Reach</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Bookmark size={11} className="text-gray-400 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-gray-800 leading-none">{formatNum(post.saves)}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Saves</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Heart size={11} className="text-gray-400 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-gray-800 leading-none">{formatNum(post.likes)}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Likes</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <MessageCircle size={11} className="text-gray-400 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-gray-800 leading-none">{post.comments}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Comments</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Share2 size={11} className="text-gray-400 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-gray-800 leading-none">{post.shares}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Shares</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <Play size={11} className="text-gray-400 flex-shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-gray-800 leading-none">{formatNum(post.views)}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Views</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const CustomGrowthTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
@@ -102,6 +192,7 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 export default function InstagramPage() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<'posts' | 'stories' | 'hashtags'>('posts');
+  const [contentFilter, setContentFilter] = useState<'Reach' | 'Recent'>('Reach');
   const { postPerformanceData, topHashtagsData, isLoading, error } = useInstagramData();
 
   const postingTimesHeatmap = Array.from({ length: 7 }, (_, day) =>
@@ -188,30 +279,9 @@ export default function InstagramPage() {
                   iconSize={16}
                   wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
                 />
-                <Line
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="Reach"
-                  stroke="#d97706"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="Views"
-                  stroke="#14b8a6"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="Followers"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={false}
-                />
+                <Line yAxisId="left" type="monotone" dataKey="Reach" stroke="#d97706" strokeWidth={2} dot={false} />
+                <Line yAxisId="left" type="monotone" dataKey="Views" stroke="#14b8a6" strokeWidth={2} dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="Followers" stroke="#3b82f6" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -239,23 +309,52 @@ export default function InstagramPage() {
                   interval={3}
                   tickFormatter={(v) => v.slice(5)}
                 />
-                <YAxis
-                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                  tickLine={false}
-                  axisLine={false}
-                />
+                <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} tickLine={false} axisLine={false} />
                 <Tooltip content={<CustomGrowthTooltip />} />
-                <Legend
-                  iconType="line"
-                  iconSize={16}
-                  wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
-                />
+                <Legend iconType="line" iconSize={16} wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
                 <Line type="monotone" dataKey="Saves" stroke="#14b8a6" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="Likes" stroke="#d97706" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="Comments" stroke="#3b82f6" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="Shares" stroke="#f97316" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* ── Content Performance ─────────────────────────────────────────── */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-gray-900">Content Performance</h3>
+              <Info size={13} className="text-gray-400" />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                {(['Reach', 'Recent'] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setContentFilter(f)}
+                    className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                      contentFilter === f
+                        ? 'bg-gray-900 text-white' :'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+              <button className="text-xs text-gray-500 hover:text-gray-700 font-medium flex items-center gap-0.5">
+                View all ›
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mb-4">Top posts &amp; reels by reach</p>
+
+          {/* Horizontal scrollable cards */}
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {CONTENT_POSTS.map((post) => (
+              <ContentPostCard key={post.id} post={post} />
+            ))}
           </div>
         </div>
 
@@ -304,7 +403,7 @@ export default function InstagramPage() {
                       <p className="text-xs text-gray-400">Comments</p>
                     </div>
                     <div>
-                      <p className="text-base font-bold text-emerald-600">{post.engRate}%</p>
+                      <p className="text-base font-bold text-gray-900">{post.engRate}%</p>
                       <p className="text-xs text-gray-400">Eng Rate</p>
                     </div>
                   </div>
@@ -323,7 +422,7 @@ export default function InstagramPage() {
             <h3 className="text-sm font-semibold text-gray-900 mb-4">Story Metrics</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { label: 'Completion Rate', value: '68.4%', color: 'text-emerald-600' },
+                { label: 'Completion Rate', value: '68.4%', color: 'text-gray-900' },
                 { label: 'Swipe-Up Rate', value: '4.2%', color: 'text-blue-600' },
                 { label: 'Replies', value: '284', color: 'text-purple-600' },
                 { label: 'Exit Rate', value: '31.6%', color: 'text-red-500' },
@@ -362,7 +461,7 @@ export default function InstagramPage() {
                         {(row.avgReach / 1000).toFixed(1)}K
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-sm font-semibold text-emerald-600">{row.avgEng}%</span>
+                        <span className="text-sm font-semibold text-gray-800">{row.avgEng}%</span>
                       </td>
                     </tr>
                   ))}

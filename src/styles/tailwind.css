@@ -6,11 +6,11 @@
   :root {
     --background: #f7f7f8;
     --foreground: #0f172a;
-    --primary: #16a34a;
+    --primary: #111827;
     --primary-foreground: #ffffff;
     --secondary: #f1f5f9;
     --secondary-foreground: #475569;
-    --accent: #0d9488;
+    --accent: #1f2937;
     --accent-foreground: #ffffff;
     --muted: #f1f5f9;
     --muted-foreground: #64748b;
@@ -18,16 +18,16 @@
     --card-foreground: #0f172a;
     --border: #e2e8f0;
     --input: #e2e8f0;
-    --ring: #16a34a;
+    --ring: #111827;
     --radius: 12px;
     --font-sans: 'Plus Jakarta Sans', sans-serif;
 
     /* Channel colors */
-    --channel-shopify: #16a34a;
+    --channel-shopify: #111827;
     --channel-amazon: #f97316;
     --channel-flipkart: #3b82f6;
     --channel-myntra: #ec4899;
-    --channel-eternz: #0d9488;
+    --channel-eternz: #374151;
     --channel-meta: #6366f1;
     --channel-google: #0ea5e9;
 
@@ -37,10 +37,10 @@
     --cat-earring: #ec4899;
     --cat-combo: #06b6d4;
     --cat-bangle: #f97316;
-    --cat-bracelet: #10b981;
+    --cat-bracelet: #374151;
 
     /* Semantic */
-    --positive: #16a34a;
+    --positive: #111827;
     --negative: #dc2626;
     --warning: #d97706;
     --neutral: #64748b;
@@ -111,7 +111,7 @@
     transform: translateY(-2px);
   }
 
-  .insight-best { background-color: #f0fdf4; border-left: 3px solid var(--positive); }
+  .insight-best { background-color: #f8fafc; border-left: 3px solid var(--positive); }
   .insight-attention { background-color: #fef2f2; border-left: 3px solid var(--negative); }
   .insight-trend { background-color: #eff6ff; border-left: 3px solid #3b82f6; }
   .insight-opportunity { background-color: #fffbeb; border-left: 3px solid var(--warning); }
@@ -122,10 +122,10 @@
   }
 
   .gradient-shopify {
-    background: linear-gradient(135deg, #16a34a22 0%, #16a34a05 100%);
+    background: linear-gradient(135deg, #11182722 0%, #11182705 100%);
   }
 
-  .waterfall-positive { fill: #16a34a; }
+  .waterfall-positive { fill: #111827; }
   .waterfall-negative { fill: #dc2626; }
   .waterfall-neutral { fill: #94a3b8; }
 }
@@ -165,8 +165,8 @@
     border-radius: 999px;
     font-size: 11px;
     font-weight: 600;
-    background-color: #dcfce7;
-    color: #15803d;
+    background-color: #f1f5f9;
+    color: #111827;
   }
 
   .trend-pill-negative {
@@ -200,8 +200,8 @@
     border-radius: 999px;
     font-size: 11px;
     font-weight: 600;
-    background-color: #dcfce7;
-    color: #15803d;
+    background-color: #f1f5f9;
+    color: #111827;
   }
 
   .status-hold {
@@ -253,8 +253,8 @@
   }
 
   .nav-item-active {
-    background-color: #dcfce7;
-    color: #15803d;
+    background-color: #111827;
+    color: #ffffff;
     font-weight: 600;
   }
 

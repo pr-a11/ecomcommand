@@ -16,11 +16,12 @@ import {
   Zap,
   ShoppingBag,
   Truck,
+  Camera,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Provider = 'meta_ads' | 'shopify' | 'courier';
+type Provider = 'meta_ads' | 'shopify' | 'courier' | 'instagram';
 type CredentialStatus = 'active' | 'inactive' | 'error';
 
 interface CredentialField {
@@ -79,13 +80,26 @@ const INTEGRATIONS: IntegrationConfig[] = [
     ],
   },
   {
+    provider: 'instagram',
+    label: 'Instagram',
+    description: 'Connect your Instagram Business account to sync posts, reels, reach, and engagement data.',
+    icon: <Camera size={20} />,
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-50',
+    borderColor: 'border-pink-200',
+    fields: [
+      { key: 'access_token', label: 'Access Token', placeholder: 'EAAxxxxxxxxxxxxxxxx', helpText: 'Long-lived Instagram User Access Token from Meta Business Manager' },
+      { key: 'business_account_id', label: 'Business Account ID', placeholder: '17841xxxxxxxxxx', helpText: 'Your Instagram Business Account ID (numeric, from Graph API)' },
+    ],
+  },
+  {
     provider: 'shopify',
     label: 'Shopify',
     description: 'Sync orders, products, and customer data from your Shopify store in real time.',
     icon: <ShoppingBag size={20} />,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50',
-    borderColor: 'border-emerald-200',
+    color: 'text-gray-700',
+    bgColor: 'bg-gray-50',
+    borderColor: 'border-gray-200',
     fields: [
       { key: 'store_domain', label: 'Store Domain', placeholder: 'your-store.myshopify.com', helpText: 'Your Shopify store URL without https://' },
       { key: 'admin_api_token', label: 'Admin API Token', placeholder: 'shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', helpText: 'Private app Admin API access token' },
@@ -132,7 +146,7 @@ interface StatusBadgeProps {
 
 function StatusBadge({ status }: StatusBadgeProps) {
   const map: Record<string, { label: string; cls: string }> = {
-    active: { label: 'Connected', cls: 'bg-emerald-100 text-emerald-700' },
+    active: { label: 'Connected', cls: 'bg-gray-900 text-white' },
     inactive: { label: 'Saved', cls: 'bg-gray-100 text-gray-600' },
     error: { label: 'Error', cls: 'bg-red-100 text-red-600' },
     unconfigured: { label: 'Not Configured', cls: 'bg-gray-100 text-gray-400' },
@@ -158,6 +172,7 @@ export default function ConfigurationPage() {
     meta_ads: {},
     shopify: {},
     courier: {},
+    instagram: {},
   });
 
   // Statuses fetched from DB
@@ -165,42 +180,49 @@ export default function ConfigurationPage() {
     meta_ads: 'unconfigured',
     shopify: 'unconfigured',
     courier: 'unconfigured',
+    instagram: 'unconfigured',
   });
 
   const [lastTested, setLastTested] = useState<Record<Provider, string | null>>({
     meta_ads: null,
     shopify: null,
     courier: null,
+    instagram: null,
   });
 
   const [lastSynced, setLastSynced] = useState<Record<Provider, string | null>>({
     meta_ads: null,
     shopify: null,
     courier: null,
+    instagram: null,
   });
 
   const [saving, setSaving] = useState<Record<Provider, boolean>>({
     meta_ads: false,
     shopify: false,
     courier: false,
+    instagram: false,
   });
 
   const [testing, setTesting] = useState<Record<Provider, boolean>>({
     meta_ads: false,
     shopify: false,
     courier: false,
+    instagram: false,
   });
 
   const [saveSuccess, setSaveSuccess] = useState<Record<Provider, boolean>>({
     meta_ads: false,
     shopify: false,
     courier: false,
+    instagram: false,
   });
 
   const [errors, setErrors] = useState<Record<Provider, string | null>>({
     meta_ads: null,
     shopify: null,
     courier: null,
+    instagram: null,
   });
 
   const [loading, setLoading] = useState(true);
@@ -227,24 +249,28 @@ export default function ConfigurationPage() {
         meta_ads: {},
         shopify: {},
         courier: {},
+        instagram: {},
       };
       const newStatuses: Record<Provider, CredentialStatus | 'unconfigured'> = {
         meta_ads: 'unconfigured',
         shopify: 'unconfigured',
         courier: 'unconfigured',
+        instagram: 'unconfigured',
       };
-      const newLastTested: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null };
-      const newLastSynced: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null };
+      const newLastTested: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
+      const newLastSynced: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
 
       rows.forEach((row) => {
-        grouped[row.provider][row.credential_key] = row.credential_value;
-        newStatuses[row.provider] = row.status;
-        if (row.last_tested_at) newLastTested[row.provider] = row.last_tested_at;
-        if (row.last_synced_at) newLastSynced[row.provider] = row.last_synced_at;
+        if (grouped[row.provider]) {
+          grouped[row.provider][row.credential_key] = row.credential_value;
+          newStatuses[row.provider] = row.status;
+          if (row.last_tested_at) newLastTested[row.provider] = row.last_tested_at;
+          if (row.last_synced_at) newLastSynced[row.provider] = row.last_synced_at;
+        }
       });
 
       // Build field states
-      const newFields: Record<Provider, IntegrationState> = { meta_ads: {}, shopify: {}, courier: {} };
+      const newFields: Record<Provider, IntegrationState> = { meta_ads: {}, shopify: {}, courier: {}, instagram: {} };
       INTEGRATIONS.forEach(({ provider, fields: fieldDefs }) => {
         fieldDefs.forEach(({ key }) => {
           newFields[provider][key] = {
@@ -395,7 +421,7 @@ export default function ConfigurationPage() {
     return (
       <AppLayout currentPath={pathname}>
         <div className="flex items-center justify-center h-64">
-          <Loader2 size={28} className="animate-spin text-teal-600" />
+          <Loader2 size={28} className="animate-spin text-gray-600" />
         </div>
       </AppLayout>
     );
@@ -408,7 +434,7 @@ export default function ConfigurationPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Settings size={22} className="text-teal-600" />
+              <Settings size={22} className="text-gray-700" />
               API Configuration
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
@@ -416,7 +442,7 @@ export default function ConfigurationPage() {
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-            <CheckCircle size={13} className="text-emerald-500" />
+            <CheckCircle size={13} className="text-gray-500" />
             Credentials stored encrypted
           </div>
         </div>
@@ -429,8 +455,8 @@ export default function ConfigurationPage() {
           const isTesting = testing[provider];
           const hasError = errors[provider];
           const showSuccess = saveSuccess[provider];
-          const hasAnySavedField = fieldDefs.some((f) => fields[provider][f.key]?.saved);
-          const hasAnyFilledField = fieldDefs.some((f) => fields[provider][f.key]?.value?.trim());
+          const hasAnySavedField = fieldDefs.some((f) => fields[provider]?.[f.key]?.saved);
+          const hasAnyFilledField = fieldDefs.some((f) => fields[provider]?.[f.key]?.value?.trim());
 
           return (
             <div
@@ -460,13 +486,13 @@ export default function ConfigurationPage() {
               <div className="px-5 py-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {fieldDefs.map(({ key, label: fieldLabel, placeholder, helpText }) => {
-                    const fieldState = fields[provider][key] ?? { value: '', visible: false, saved: false };
+                    const fieldState = fields[provider]?.[key] ?? { value: '', visible: false, saved: false };
                     return (
                       <div key={key}>
                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                           {fieldLabel}
                           {fieldState.saved && (
-                            <span className="ml-2 text-emerald-600 font-normal">✓ Saved</span>
+                            <span className="ml-2 text-gray-500 font-normal">✓ Saved</span>
                           )}
                         </label>
                         <div className="relative">
@@ -475,7 +501,7 @@ export default function ConfigurationPage() {
                             value={fieldState.value}
                             onChange={(e) => handleFieldChange(provider, key, e.target.value)}
                             placeholder={fieldState.saved && !fieldState.visible ? maskValue(fieldState.value) || placeholder : placeholder}
-                            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 pr-10 bg-gray-50 focus:bg-white focus:border-teal-400 focus:ring-2 focus:ring-teal-100 outline-none transition-all font-mono placeholder:font-sans placeholder:text-gray-400"
+                            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 pr-10 bg-gray-50 focus:bg-white focus:border-gray-400 focus:ring-2 focus:ring-gray-100 outline-none transition-all font-mono placeholder:font-sans placeholder:text-gray-400"
                             autoComplete="off"
                             spellCheck={false}
                           />
@@ -504,9 +530,9 @@ export default function ConfigurationPage() {
                   </div>
                 )}
                 {showSuccess && (
-                  <div className="mt-4 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
-                    <CheckCircle size={15} className="text-emerald-500" />
-                    <p className="text-xs text-emerald-700 font-medium">Credentials saved successfully.</p>
+                  <div className="mt-4 flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+                    <CheckCircle size={15} className="text-gray-700" />
+                    <p className="text-xs text-gray-700 font-medium">Credentials saved successfully.</p>
                   </div>
                 )}
 
@@ -515,7 +541,7 @@ export default function ConfigurationPage() {
                   <button
                     onClick={() => handleSave(provider)}
                     disabled={isSaving || !hasAnyFilledField}
-                    className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isSaving ? (
                       <Loader2 size={14} className="animate-spin" />

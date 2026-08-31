@@ -3,8 +3,12 @@ import React from 'react';
 import { useMarketingData } from '@/hooks/useMarketingData';
 import { Info } from 'lucide-react';
 
-const FUNNEL_COLORS = ['#a78bfa', '#818cf8', '#f9a8d4', '#fbbf24'];
-const FUNNEL_LABELS = ['Sessions', 'Add to Cart', 'Checkouts', 'Purchases'];
+const FUNNEL_COLORS = [
+  { fill: '#a78bfa', label: 'Sessions' },
+  { fill: '#818cf8', label: 'Add to Cart' },
+  { fill: '#f9a8d4', label: 'Checkouts' },
+  { fill: '#fbbf24', label: 'Purchases' },
+];
 
 export default function ConversionFunnelChart() {
   const { conversionFunnelData } = useMarketingData();
@@ -21,7 +25,24 @@ export default function ConversionFunnelChart() {
   const checkoutToPurchase = data?.[2]?.value ? ((data?.[3]?.value / data?.[2]?.value) * 100)?.toFixed(2) : '0';
   const overall = data?.[0]?.value ? ((data?.[3]?.value / data?.[0]?.value) * 100)?.toFixed(2) : '0';
 
-  const maxVal = data?.[0]?.value ?? 1;
+  // SVG funnel dimensions
+  const svgWidth = 260;
+  const svgHeight = 200;
+  const topWidth = 220;
+  const bottomWidth = 60;
+  const layerHeight = svgHeight / data?.length;
+  const centerX = svgWidth / 2;
+
+  const layers = data?.map((stage, i) => {
+    const topW = topWidth - (topWidth - bottomWidth) * (i / data?.length);
+    const botW = topWidth - (topWidth - bottomWidth) * ((i + 1) / data?.length);
+    const y = i * layerHeight;
+    const x1Top = centerX - topW / 2;
+    const x2Top = centerX + topW / 2;
+    const x1Bot = centerX - botW / 2;
+    const x2Bot = centerX + botW / 2;
+    return { x1Top, x2Top, x1Bot, x2Bot, y, stage, color: FUNNEL_COLORS?.[i] };
+  });
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-full flex flex-col">
@@ -29,43 +50,65 @@ export default function ConversionFunnelChart() {
         <h3 className="text-sm font-semibold text-gray-900">Conversion Funnel</h3>
         <Info size={13} className="text-gray-400" />
       </div>
-      <p className="text-xs text-gray-400 mb-5">GA4 · Sessions → Cart → Checkout → Purchases</p>
+      <p className="text-xs text-gray-400 mb-4">GA4 · Sessions → Cart → Checkout → Purchases</p>
 
-      {/* Funnel visual */}
-      <div className="flex flex-col items-center gap-1 flex-1 justify-center">
-        {data?.map((stage, i) => {
-          const widthPct = Math.max(20, (stage?.value / maxVal) * 100);
-          return (
-            <div key={stage?.stage} className="w-full flex items-center gap-3">
-              <span className="text-xs text-gray-400 w-8 text-right tabular-nums">
-                {i === 0 ? '100%' : `${((stage?.value / maxVal) * 100)?.toFixed(1)}%`}
+      {/* Funnel SVG + Labels */}
+      <div className="flex items-center justify-center gap-4 flex-1">
+        {/* Left pct labels */}
+        <div className="flex flex-col justify-around" style={{ height: svgHeight }}>
+          {data?.map((stage, i) => (
+            <div key={stage?.stage} className="text-right">
+              <span className="text-xs text-gray-400 tabular-nums">
+                {i === 0 ? '100%' : `${((stage?.value / data?.[0]?.value) * 100)?.toFixed(1)}%`}
               </span>
-              <div className="flex-1 flex justify-center">
-                <div
-                  className="flex items-center justify-center rounded-sm transition-all duration-700 py-2.5"
-                  style={{
-                    width: `${widthPct}%`,
-                    backgroundColor: FUNNEL_COLORS?.[i],
-                    minWidth: '60px',
-                  }}
-                >
-                  <span className="text-xs font-bold text-white">
-                    {stage?.value?.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              </div>
-              <div className="w-20 flex-shrink-0">
-                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {FUNNEL_LABELS?.[i]}
-                </span>
-              </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* SVG Funnel */}
+        <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+          <defs>
+            {layers?.map((l, i) => (
+              <linearGradient key={i} id={`fg${i}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={l?.color?.fill} stopOpacity="1" />
+                <stop offset="100%" stopColor={l?.color?.fill} stopOpacity="0.75" />
+              </linearGradient>
+            ))}
+          </defs>
+          {layers?.map((l, i) => (
+            <g key={i}>
+              <polygon
+                points={`${l?.x1Top},${l?.y} ${l?.x2Top},${l?.y} ${l?.x2Bot},${l?.y + layerHeight - 2} ${l?.x1Bot},${l?.y + layerHeight - 2}`}
+                fill={`url(#fg${i})`}
+              />
+              {/* Value label */}
+              <text
+                x={centerX}
+                y={l?.y + layerHeight / 2 + 4}
+                textAnchor="middle"
+                fontSize="11"
+                fontWeight="700"
+                fill="white"
+              >
+                {stage?.value?.toLocaleString('en-IN')}
+              </text>
+            </g>
+          ))}
+        </svg>
+
+        {/* Right stage labels */}
+        <div className="flex flex-col justify-around" style={{ height: svgHeight }}>
+          {FUNNEL_COLORS?.map((c, i) => (
+            <div key={c?.label} className="flex items-center gap-1.5">
+              <div className="w-2 h-2 rounded-sm flex-shrink-0" style={{ backgroundColor: c?.fill }} />
+              <span className="text-xs font-medium text-gray-600 whitespace-nowrap">{c?.label}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Conversion stats */}
-      <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-100">
+      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-gray-100">
         {[
           { label: 'SESS → CART', value: `${sessToCart}%`, color: 'text-violet-600' },
           { label: 'CART → CHECKOUT', value: `${cartToCheckout}%`, color: 'text-pink-600' },
