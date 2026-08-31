@@ -4,10 +4,11 @@ import DashboardKpiGrid from './components/DashboardKpiGrid';
 import SalesByChannelChart from './components/SalesByChannelChart';
 import NetSalesVsMarginChart from './components/NetSalesVsMarginChart';
 import SalesSummaryTable from './components/SalesSummaryTable';
-import GeographicSalesPanel from './components/GeographicSalesPanel';
 import ChannelMixPanel from './components/ChannelMixPanel';
 import TopSkusPanel from './components/TopSkusPanel';
 import ReturnsByChannelTable from './components/ReturnsByChannelTable';
+import GeographicSalesPanel from './components/GeographicSalesPanel';
+import CodPrepaidCard from './components/CodPrepaidCard';
 
 export default function DashboardPage() {
   return (
@@ -30,27 +31,30 @@ export default function DashboardPage() {
         {/* KPI Grid */}
         <DashboardKpiGrid />
 
+        {/* COD vs Prepaid + Channel Mix */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <CodPrepaidCard />
+          <ChannelMixPanel />
+        </div>
+
         {/* Charts row */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <SalesByChannelChart />
           <NetSalesVsMarginChart />
         </div>
 
-        {/* Sales Summary + Channel Mix */}
+        {/* Sales Summary + Top SKUs */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
           <div className="lg:col-span-3">
             <SalesSummaryTable />
           </div>
           <div className="lg:col-span-2">
-            <ChannelMixPanel />
+            <TopSkusPanel />
           </div>
         </div>
 
-        {/* Geographic + Top SKUs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <GeographicSalesPanel />
-          <TopSkusPanel />
-        </div>
+        {/* Geographic */}
+        <GeographicSalesPanel />
 
         {/* Returns */}
         <ReturnsByChannelTable />

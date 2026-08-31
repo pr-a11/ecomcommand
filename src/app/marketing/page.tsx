@@ -8,6 +8,7 @@ import ChannelSessionsTable from './components/ChannelSessionsTable';
 import AgeGenderChart from './components/AgeGenderChart';
 import AbandonedCartsCard from './components/AbandonedCartsCard';
 import LiveActiveUsersCard from './components/LiveActiveUsersCard';
+import ActiveUsersByCountry from './components/ActiveUsersByCountry';
 
 export default function MarketingPage() {
   return (
@@ -51,6 +52,9 @@ export default function MarketingPage() {
             <LiveActiveUsersCard />
           </div>
         </div>
+
+        {/* Active Users by Country (world map) */}
+        <ActiveUsersByCountry />
 
         {/* Channel Sessions + Age/Gender */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">

@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import '../styles/tailwind.css';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { DateRangeProvider } from '@/contexts/DateRangeContext';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -31,7 +32,9 @@ export default function RootLayout({
     <html lang="en" className={plusJakartaSans.variable}>
       <body className={plusJakartaSans.className}>
         <AuthProvider>
-          {children}
+          <DateRangeProvider>
+            {children}
+          </DateRangeProvider>
         </AuthProvider>
 
         <script type="module" async src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Fecomcomman6400back.builtwithrocket.new&_be=https%3A%2F%2Fappanalytics.rocket.new&_v=0.1.20" />

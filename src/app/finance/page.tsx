@@ -7,6 +7,8 @@ import ContributionMarginChart from './components/ContributionMarginChart';
 import GeographicSalesFinance from './components/GeographicSalesFinance';
 import ChannelProfitabilityTable from './components/ChannelProfitabilityTable';
 import MarketplaceFeeTable from './components/MarketplaceFeeTable';
+import AovOverTimeChart from './components/AovOverTimeChart';
+import TopSkusByNetSales from './components/TopSkusByNetSales';
 
 export default function FinancePage() {
   return (
@@ -35,6 +37,12 @@ export default function FinancePage() {
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <PlWaterfallChart />
           <NetSalesOverTimeChart />
+        </div>
+
+        {/* AOV Over Time + Top SKUs by Net Sales */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <AovOverTimeChart />
+          <TopSkusByNetSales />
         </div>
 
         {/* Contribution Margin + Geographic */}

@@ -1,45 +1,63 @@
 'use client';
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useMarketingData } from '@/hooks/useMarketingData';
-import SectionHeader from '@/components/ui/SectionHeader';
-import { Filter } from 'lucide-react';
+import { Info } from 'lucide-react';
+
+const FUNNEL_COLORS = ['#a78bfa', '#818cf8', '#f9a8d4', '#fbbf24'];
+const FUNNEL_LABELS = ['Sessions', 'Add to Cart', 'Checkouts', 'Purchases'];
 
 export default function ConversionFunnelChart() {
   const { conversionFunnelData } = useMarketingData();
 
-  const sessToCart = ((conversionFunnelData?.[1]?.value / conversionFunnelData?.[0]?.value) * 100)?.toFixed(1);
-  const cartToCheckout = ((conversionFunnelData?.[2]?.value / conversionFunnelData?.[1]?.value) * 100)?.toFixed(1);
-  const checkoutToPurchase = ((conversionFunnelData?.[3]?.value / conversionFunnelData?.[2]?.value) * 100)?.toFixed(1);
-  const overall = ((conversionFunnelData?.[3]?.value / conversionFunnelData?.[0]?.value) * 100)?.toFixed(2);
+  const data = conversionFunnelData ?? [
+    { stage: 'Sessions', value: 7321, pct: 100 },
+    { stage: 'Add to Cart', value: 222, pct: 3.0 },
+    { stage: 'Checkouts', value: 89, pct: 1.2 },
+    { stage: 'Purchases', value: 38, pct: 0.5 },
+  ];
 
-  const stageColors = ['var(--channel-flipkart)', '#60a5fa', '#93c5fd', '#bfdbfe'];
+  const sessToCart = data?.[0]?.value ? ((data?.[1]?.value / data?.[0]?.value) * 100)?.toFixed(2) : '0';
+  const cartToCheckout = data?.[1]?.value ? ((data?.[2]?.value / data?.[1]?.value) * 100)?.toFixed(2) : '0';
+  const checkoutToPurchase = data?.[2]?.value ? ((data?.[3]?.value / data?.[2]?.value) * 100)?.toFixed(2) : '0';
+  const overall = data?.[0]?.value ? ((data?.[3]?.value / data?.[0]?.value) * 100)?.toFixed(2) : '0';
+
+  const maxVal = data?.[0]?.value ?? 1;
 
   return (
-    <div className="chart-card h-full flex flex-col">
-      <SectionHeader icon={<Filter size={14} />} label="Conversion Funnel" />
-      <p className="text-xs text-muted-foreground mb-4">GA4 · Sessions → Cart → Checkout → Purchases</p>
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-1">
+        <h3 className="text-sm font-semibold text-gray-900">Conversion Funnel</h3>
+        <Info size={13} className="text-gray-400" />
+      </div>
+      <p className="text-xs text-gray-400 mb-5">GA4 · Sessions → Cart → Checkout → Purchases</p>
 
-      {/* Funnel bars */}
-      <div className="flex flex-col gap-2 flex-1">
-        {conversionFunnelData?.map((stage, i) => {
-          const widthPct = (stage?.value / conversionFunnelData?.[0]?.value) * 100;
+      {/* Funnel visual */}
+      <div className="flex flex-col items-center gap-1 flex-1 justify-center">
+        {data?.map((stage, i) => {
+          const widthPct = Math.max(20, (stage?.value / maxVal) * 100);
           return (
-            <div key={`funnel-${stage?.stage}`} className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-500 text-foreground">{stage?.stage}</span>
-                <span className="tabular-nums font-600 text-foreground">{stage?.value?.toLocaleString('en-IN')}</span>
-              </div>
-              <div className="h-8 bg-muted rounded-lg overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${widthPct}%` }}
-                  transition={{ delay: 0.2 + i * 0.15, duration: 0.6, ease: 'easeOut' }}
-                  className="h-full rounded-lg flex items-center px-2"
-                  style={{ backgroundColor: stageColors?.[i] }}
+            <div key={stage?.stage} className="w-full flex items-center gap-3">
+              <span className="text-xs text-gray-400 w-8 text-right tabular-nums">
+                {i === 0 ? '100%' : `${((stage?.value / maxVal) * 100)?.toFixed(1)}%`}
+              </span>
+              <div className="flex-1 flex justify-center">
+                <div
+                  className="flex items-center justify-center rounded-sm transition-all duration-700 py-2.5"
+                  style={{
+                    width: `${widthPct}%`,
+                    backgroundColor: FUNNEL_COLORS?.[i],
+                    minWidth: '60px',
+                  }}
                 >
-                  <span className="text-xs font-700 text-white">{stage?.pct}%</span>
-                </motion.div>
+                  <span className="text-xs font-bold text-white">
+                    {stage?.value?.toLocaleString('en-IN')}
+                  </span>
+                </div>
+              </div>
+              <div className="w-20 flex-shrink-0">
+                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                  {FUNNEL_LABELS?.[i]}
+                </span>
               </div>
             </div>
           );
@@ -47,16 +65,16 @@ export default function ConversionFunnelChart() {
       </div>
 
       {/* Conversion stats */}
-      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-border">
+      <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-100">
         {[
-          { label: 'Sess → Cart', value: `${sessToCart}%` },
-          { label: 'Cart → Checkout', value: `${cartToCheckout}%` },
-          { label: 'Checkout → Buy', value: `${checkoutToPurchase}%` },
-          { label: 'Overall Conv.', value: `${overall}%` },
+          { label: 'SESS → CART', value: `${sessToCart}%`, color: 'text-violet-600' },
+          { label: 'CART → CHECKOUT', value: `${cartToCheckout}%`, color: 'text-pink-600' },
+          { label: 'CHECK → PURCHASE', value: `${checkoutToPurchase}%`, color: 'text-amber-600' },
+          { label: 'OVERALL CONV', value: `${overall}%`, color: 'text-gray-700' },
         ]?.map((stat) => (
-          <div key={`fstat-${stat?.label}`} className="bg-muted/50 rounded-lg p-2 text-center">
-            <p className="text-xs text-muted-foreground mb-0.5">{stat?.label}</p>
-            <p className="text-sm font-700 text-foreground tabular-nums">{stat?.value}</p>
+          <div key={stat?.label} className="text-center">
+            <p className="text-xs text-gray-400 mb-0.5">{stat?.label}</p>
+            <p className={`text-sm font-bold tabular-nums ${stat?.color}`}>{stat?.value}</p>
           </div>
         ))}
       </div>

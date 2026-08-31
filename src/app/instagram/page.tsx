@@ -4,16 +4,34 @@ import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import { useInstagramData } from '@/hooks/useInstagramData';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
 } from 'recharts';
+import { Info } from 'lucide-react';
 
-function KpiCard({ label, value, change, isPercent, sparkline }: {
-  label: string; value: number; change: number; isPercent?: boolean; sparkline: number[];
+// ── KPI Card ──────────────────────────────────────────────────────────────────
+function KpiCard({
+  label,
+  value,
+  change,
+  isPercent,
+  sub,
+}: {
+  label: string;
+  value: number;
+  change: number;
+  isPercent?: boolean;
+  sub?: string;
 }) {
   const isPositive = change >= 0;
   const formatted = isPercent
-    ? `${value.toFixed(2)}%`
+    ? `${value.toFixed(1)}%`
     : value >= 1000000
     ? `${(value / 100000).toFixed(1)}L`
     : value >= 1000
@@ -21,15 +39,62 @@ function KpiCard({ label, value, change, isPercent, sparkline }: {
     : value.toString();
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 min-w-[160px] flex-1">
-      <p className="text-xs text-gray-500 font-medium mb-1">{label}</p>
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 min-w-[150px] flex-1">
+      <p className="text-xs text-gray-500 font-medium mb-1 uppercase tracking-wide">{label}</p>
       <p className="text-2xl font-bold text-gray-900 mb-1">{formatted}</p>
-      <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+      <span
+        className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${
+          isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+        }`}
+      >
         {isPositive ? '↑' : '↓'} {Math.abs(change)}%
       </span>
+      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
     </div>
   );
 }
+
+// ── Growth & Reach multi-line data ────────────────────────────────────────────
+const growthData = Array.from({ length: 17 }, (_, i) => {
+  const date = new Date('2026-08-02');
+  date.setDate(date.getDate() + i);
+  const d = date.toISOString().slice(0, 10);
+  return {
+    date: d,
+    Reach: 1948 + Math.floor(Math.sin(i * 0.6) * 600 + i * 80),
+    Views: 3230 + Math.floor(Math.cos(i * 0.5) * 800 + i * 120),
+    Followers: 25193 + i * 10,
+  };
+});
+
+// ── Engagement multi-line data ────────────────────────────────────────────────
+const engagementData = Array.from({ length: 17 }, (_, i) => {
+  const date = new Date('2026-08-02');
+  date.setDate(date.getDate() + i);
+  const d = date.toISOString().slice(0, 10);
+  return {
+    date: d,
+    Saves: 240 + Math.floor(Math.sin(i * 0.7) * 60),
+    Likes: 80 + Math.floor(Math.cos(i * 0.5) * 20),
+    Comments: 20 + Math.floor(Math.sin(i * 0.9) * 8),
+    Shares: 15 + Math.floor(Math.cos(i * 0.8) * 6),
+  };
+});
+
+const CustomGrowthTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs min-w-[160px]">
+      <p className="font-semibold text-gray-700 mb-1.5">{label}</p>
+      {payload.map((p: any) => (
+        <div key={p.dataKey} className="flex justify-between gap-3 mb-0.5">
+          <span style={{ color: p.color }}>{p.dataKey}</span>
+          <span className="font-semibold text-gray-800">{p.value?.toLocaleString('en-IN')}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -37,29 +102,18 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 export default function InstagramPage() {
   const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<'posts' | 'stories' | 'hashtags'>('posts');
-  const { instagramKpis, postPerformanceData, topHashtagsData, isLoading, error } = useInstagramData();
+  const { postPerformanceData, topHashtagsData, isLoading, error } = useInstagramData();
 
-  const storyPerformanceData = {
-    completionRate: 72.4,
-    swipeUpRate: 18.6,
-    replies: 340,
-    impressions: 52000,
-    exits: 27.6,
-  };
-
-  const followerGrowthData = Array.from({ length: 90 }, (_, i) => ({
-    day: i + 1,
-    followers: 45000 + Math.floor(Math.random() * 500) * (i + 1),
-  }));
-
-  const postingTimesHeatmap = Array.from({ length: 7 }, () =>
-    Array.from({ length: 24 }, () => ({ engagement: Math.floor(Math.random() * 100) }))
+  const postingTimesHeatmap = Array.from({ length: 7 }, (_, day) =>
+    Array.from({ length: 24 }, (_, hour) => {
+      const peakHours = [9, 12, 18, 20, 21];
+      const peakDays = [3, 4, 5];
+      const isPeak = peakHours.includes(hour) && peakDays.includes(day);
+      const isGood = hour >= 8 && hour <= 22 && day >= 1 && day <= 5;
+      const base = isPeak ? 80 : isGood ? 40 : 10;
+      return { engagement: base + Math.floor(Math.random() * 20) };
+    })
   );
-
-  const storyDonutData = [
-    { name: 'Completed', value: storyPerformanceData.completionRate, color: '#10B981' },
-    { name: 'Exited', value: storyPerformanceData.exits, color: '#E5E7EB' },
-  ];
 
   if (isLoading) {
     return (
@@ -82,32 +136,127 @@ export default function InstagramPage() {
   return (
     <AppLayout currentPath={pathname}>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Instagram Analytics</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Content performance & audience insights</p>
-        </div>
-
         {/* KPI Row */}
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {instagramKpis && Object.values(instagramKpis).map((kpi: any) => (
-            <KpiCard key={kpi.label} {...kpi} sparkline={kpi.sparkline} />
-          ))}
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          <KpiCard label="FOLLOWERS" value={25329} change={0.5} sub="↑ 136 new followers" />
+          <KpiCard label="REACH" value={30019} change={-29.5} sub="vs prior period" />
+          <KpiCard label="PROFILE VISITS" value={3075} change={-29.5} sub="vs prior period" />
+          <KpiCard label="ENGAGEMENT RATE" value={19.0} change={0.0} isPercent sub="vs prior period" />
+          <KpiCard label="CONTENT PUBLISHED" value={5} change={-50.0} sub="vs prior period" />
+          <KpiCard label="AVG REEL WATCH" value={6.6} change={-37.0} sub="vs prior period" />
+          <KpiCard label="FB FOLLOWERS" value={7777} change={0} sub="Facebook Page · organic" />
         </div>
 
-        {/* Follower Growth Chart */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h3 className="text-base font-semibold text-gray-900 mb-1">Follower Growth</h3>
-          <p className="text-xs text-gray-400 mb-4">Last 90 days</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={followerGrowthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} tickFormatter={(v) => `Day ${v}`} interval={14} />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-              <Tooltip formatter={(v: number) => [v.toLocaleString('en-IN'), 'Followers']} />
-              <Line type="monotone" dataKey="followers" stroke="#EC4899" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
+        {/* Growth & Reach + Engagement */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          {/* Growth & Reach */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-0.5">
+              <h3 className="text-sm font-semibold text-gray-900">Growth &amp; Reach</h3>
+              <Info size={13} className="text-gray-400" />
+            </div>
+            <p className="text-xs text-gray-400 mb-4">Instagram · organic</p>
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={growthData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={3}
+                  tickFormatter={(v) => v.slice(5)}
+                />
+                <YAxis
+                  yAxisId="left"
+                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v)}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`}
+                />
+                <Tooltip content={<CustomGrowthTooltip />} />
+                <Legend
+                  iconType="line"
+                  iconSize={16}
+                  wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
+                />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="Reach"
+                  stroke="#d97706"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="Views"
+                  stroke="#14b8a6"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="Followers"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Engagement */}
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center justify-between mb-0.5">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-900">Engagement</h3>
+                <Info size={13} className="text-gray-400" />
+              </div>
+              <button className="text-xs text-gray-500 hover:text-gray-700 font-medium">
+                View detail ›
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mb-4">Interactions · saves = buy-intent</p>
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={engagementData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                  tickLine={false}
+                  axisLine={false}
+                  interval={3}
+                  tickFormatter={(v) => v.slice(5)}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip content={<CustomGrowthTooltip />} />
+                <Legend
+                  iconType="line"
+                  iconSize={16}
+                  wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }}
+                />
+                <Line type="monotone" dataKey="Saves" stroke="#14b8a6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Likes" stroke="#d97706" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Comments" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Shares" stroke="#f97316" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Content Tabs */}
@@ -116,7 +265,11 @@ export default function InstagramPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${activeTab === tab ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors capitalize ${
+                activeTab === tab
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
@@ -126,16 +279,34 @@ export default function InstagramPage() {
         {activeTab === 'posts' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {postPerformanceData?.map((post: any) => (
-              <div key={post.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div className={`h-32 bg-gradient-to-br ${post.gradient} flex items-center justify-center`}>
-                  <span className="text-white text-xs font-semibold bg-black/30 px-2 py-0.5 rounded-full">{post.type}</span>
+              <div
+                key={post.id}
+                className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div
+                  className={`h-32 bg-gradient-to-br ${post.gradient} flex items-center justify-center`}
+                >
+                  <span className="text-white text-xs font-semibold bg-black/30 px-2 py-0.5 rounded-full">
+                    {post.type}
+                  </span>
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-gray-700 mb-3 line-clamp-2">{post.caption}</p>
                   <div className="grid grid-cols-3 gap-2 text-center">
-                    <div><p className="text-base font-bold text-gray-900">{(post.likes / 1000).toFixed(1)}K</p><p className="text-xs text-gray-400">Likes</p></div>
-                    <div><p className="text-base font-bold text-gray-900">{post.comments}</p><p className="text-xs text-gray-400">Comments</p></div>
-                    <div><p className="text-base font-bold text-emerald-600">{post.engRate}%</p><p className="text-xs text-gray-400">Eng Rate</p></div>
+                    <div>
+                      <p className="text-base font-bold text-gray-900">
+                        {(post.likes / 1000).toFixed(1)}K
+                      </p>
+                      <p className="text-xs text-gray-400">Likes</p>
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-gray-900">{post.comments}</p>
+                      <p className="text-xs text-gray-400">Comments</p>
+                    </div>
+                    <div>
+                      <p className="text-base font-bold text-emerald-600">{post.engRate}%</p>
+                      <p className="text-xs text-gray-400">Eng Rate</p>
+                    </div>
                   </div>
                   <div className="mt-2 pt-2 border-t border-gray-50 flex justify-between text-xs text-gray-400">
                     <span>Reach: {(post.reach / 1000).toFixed(1)}K</span>
@@ -148,37 +319,20 @@ export default function InstagramPage() {
         )}
 
         {activeTab === 'stories' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="text-base font-semibold text-gray-900 mb-4">Story Completion Rate</h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={storyDonutData} cx="50%" cy="50%" innerRadius={60} outerRadius={85} dataKey="value" paddingAngle={3}>
-                    {storyDonutData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                  </Pie>
-                  <Tooltip formatter={(v: number) => [`${v.toFixed(1)}%`, '']} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="text-center mt-2">
-                <p className="text-3xl font-bold text-gray-900">{storyPerformanceData.completionRate}%</p>
-                <p className="text-sm text-gray-500">Completion Rate</p>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="text-base font-semibold text-gray-900 mb-4">Story Metrics</h3>
-              <div className="space-y-4">
-                {[
-                  { label: 'Swipe-Up Rate', value: `${storyPerformanceData.swipeUpRate}%`, color: 'text-teal-600' },
-                  { label: 'Replies', value: storyPerformanceData.replies.toString(), color: 'text-blue-600' },
-                  { label: 'Impressions', value: `${(storyPerformanceData.impressions / 1000).toFixed(1)}K`, color: 'text-purple-600' },
-                  { label: 'Exit Rate', value: `${storyPerformanceData.exits}%`, color: 'text-red-500' },
-                ].map((m) => (
-                  <div key={m.label} className="flex items-center justify-between py-2 border-b border-gray-50">
-                    <span className="text-sm text-gray-600">{m.label}</span>
-                    <span className={`text-lg font-bold ${m.color}`}>{m.value}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">Story Metrics</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { label: 'Completion Rate', value: '68.4%', color: 'text-emerald-600' },
+                { label: 'Swipe-Up Rate', value: '4.2%', color: 'text-blue-600' },
+                { label: 'Replies', value: '284', color: 'text-purple-600' },
+                { label: 'Exit Rate', value: '31.6%', color: 'text-red-500' },
+              ].map((m) => (
+                <div key={m.label} className="text-center p-4 bg-gray-50 rounded-lg">
+                  <p className={`text-2xl font-bold ${m.color}`}>{m.value}</p>
+                  <p className="text-xs text-gray-500 mt-1">{m.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -186,14 +340,16 @@ export default function InstagramPage() {
         {activeTab === 'hashtags' && (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100">
-              <h3 className="text-base font-semibold text-gray-900">Top Performing Hashtags</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Top Performing Hashtags</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50">
                     {['Hashtag', 'Posts Used', 'Avg Reach', 'Avg Engagement'].map((h) => (
-                      <th key={h} className="text-left text-xs font-semibold text-gray-500 px-4 py-3">{h}</th>
+                      <th key={h} className="text-left text-xs font-semibold text-gray-500 px-4 py-3">
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -202,7 +358,9 @@ export default function InstagramPage() {
                     <tr key={row.tag} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3 text-sm font-semibold text-pink-600">{row.tag}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{row.posts}</td>
-                      <td className="px-4 py-3 text-sm text-gray-700">{(row.avgReach / 1000).toFixed(1)}K</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">
+                        {(row.avgReach / 1000).toFixed(1)}K
+                      </td>
                       <td className="px-4 py-3">
                         <span className="text-sm font-semibold text-emerald-600">{row.avgEng}%</span>
                       </td>
@@ -216,13 +374,15 @@ export default function InstagramPage() {
 
         {/* Posting Times Heatmap */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <h3 className="text-base font-semibold text-gray-900 mb-1">Best Posting Times</h3>
-          <p className="text-xs text-gray-400 mb-4">Engagement heatmap by day & hour</p>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">Best Posting Times</h3>
+          <p className="text-xs text-gray-400 mb-4">Engagement heatmap by day &amp; hour</p>
           <div className="overflow-x-auto">
             <div className="flex gap-1 mb-1">
               <div className="w-10" />
               {HOURS.filter((_, i) => i % 3 === 0).map((h) => (
-                <div key={h} className="flex-1 text-center text-xs text-gray-400">{h}h</div>
+                <div key={h} className="flex-1 text-center text-xs text-gray-400">
+                  {h}h
+                </div>
               ))}
             </div>
             {postingTimesHeatmap.map((dayData, dayIdx) => (
