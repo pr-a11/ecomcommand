@@ -1,0 +1,122 @@
+export const kpiData = {
+  grossSales: { value: 1109200, change: -10.1, label: 'Gross Sales', sparkline: [95000, 88000, 102000, 97000, 115000, 108000, 92000, 86000, 99000, 104000, 97000, 88000] },
+  invoicedSales: { value: 632314, change: 31.4, label: 'Invoiced Sales', sparkline: [42000, 48000, 51000, 58000, 62000, 55000, 67000, 71000, 65000, 69000, 74000, 78000] },
+  netSales: { value: 584721, change: 31.1, label: 'Net Sales', sparkline: [38000, 44000, 47000, 54000, 58000, 51000, 63000, 67000, 61000, 65000, 70000, 72000] },
+  orders: { value: 144, change: -5.9, label: 'Orders', badge: '94 fulfilled', sparkline: [16, 14, 18, 15, 19, 17, 13, 12, 16, 15, 14, 13] },
+  aov: { value: 6220, change: 0.4, label: 'AOV', sparkline: [5800, 6100, 6050, 6200, 6180, 6090, 6250, 6300, 6220, 6190, 6240, 6220] },
+  contributionMargin: { value: 63.4, change: 4.5, label: 'Contribution Margin %', isPercent: true, sparkline: [58, 60, 61, 62, 63, 60, 62, 64, 63, 65, 64, 63] },
+  returningCustomerRate: { value: 15.38, change: -16.9, label: 'Returning Customer Rate', isPercent: true, sparkline: [18, 17, 16, 18, 15, 17, 16, 14, 15, 16, 15, 15] },
+  adsSpend: { value: 80963, change: -37.9, label: 'Ads Spend', sparkline: [12000, 11000, 9500, 8800, 7200, 6500, 5800, 6100, 6800, 7200, 6900, 6500] },
+  attributedROAS: { value: 2.81, change: 51.1, label: 'Attributed ROAS', sparkline: [1.8, 2.0, 2.2, 2.4, 2.6, 2.5, 2.7, 2.9, 2.8, 3.0, 2.9, 2.81] },
+};
+
+export const salesByChannelData = [
+  { date: '1 Aug', shopify: 18200, amazon: 8400, flipkart: 6100, myntra: 4200, eternz: 2100 },
+  { date: '2 Aug', shopify: 22100, amazon: 9800, flipkart: 7200, myntra: 5100, eternz: 2800 },
+  { date: '3 Aug', shopify: 15600, amazon: 6200, flipkart: 4800, myntra: 3200, eternz: 1800 },
+  { date: '4 Aug', shopify: 28400, amazon: 12100, flipkart: 8900, myntra: 6400, eternz: 3200 },
+  { date: '5 Aug', shopify: 19800, amazon: 8600, flipkart: 5900, myntra: 4100, eternz: 2400 },
+  { date: '6 Aug', shopify: 24600, amazon: 10200, flipkart: 7100, myntra: 5800, eternz: 2900 },
+  { date: '7 Aug', shopify: 16200, amazon: 7400, flipkart: 4200, myntra: 3100, eternz: 1600 },
+  { date: '8 Aug', shopify: 31200, amazon: 14600, flipkart: 9800, myntra: 7200, eternz: 3800 },
+  { date: '9 Aug', shopify: 20400, amazon: 9100, flipkart: 6200, myntra: 4600, eternz: 2200 },
+  { date: '10 Aug', shopify: 26800, amazon: 11800, flipkart: 8100, myntra: 5900, eternz: 3100 },
+  { date: '11 Aug', shopify: 18900, amazon: 8200, flipkart: 5400, myntra: 3800, eternz: 2000 },
+  { date: '12 Aug', shopify: 34100, amazon: 15800, flipkart: 10200, myntra: 7800, eternz: 4200 },
+  { date: '13 Aug', shopify: 42800, amazon: 19200, flipkart: 12800, myntra: 9400, eternz: 5100 },
+  { date: '14 Aug', shopify: 38600, amazon: 17400, flipkart: 11600, myntra: 8600, eternz: 4600 },
+  { date: '15 Aug', shopify: 29200, amazon: 13100, flipkart: 8800, myntra: 6500, eternz: 3400 },
+  { date: '16 Aug', shopify: 44200, amazon: 20100, flipkart: 13400, myntra: 9800, eternz: 5400 },
+  { date: '17 Aug', shopify: 22100, amazon: 9900, flipkart: 6600, myntra: 4800, eternz: 2600 },
+  { date: '18 Aug', shopify: 19800, amazon: 8800, flipkart: 5900, myntra: 4200, eternz: 2200 },
+  { date: '19 Aug', shopify: 36400, amazon: 16200, flipkart: 10800, myntra: 7900, eternz: 4300 },
+  { date: '20 Aug', shopify: 28100, amazon: 12400, flipkart: 8300, myntra: 6100, eternz: 3200 },
+  { date: '21 Aug', shopify: 21600, amazon: 9600, flipkart: 6400, myntra: 4600, eternz: 2400 },
+  { date: '22 Aug', shopify: 16800, amazon: 7500, flipkart: 4900, myntra: 3500, eternz: 1900 },
+  { date: '23 Aug', shopify: 24200, amazon: 10800, flipkart: 7200, myntra: 5300, eternz: 2800 },
+  { date: '24 Aug', shopify: 18400, amazon: 8100, flipkart: 5400, myntra: 3900, eternz: 2100 },
+  { date: '25 Aug', shopify: 12200, amazon: 5400, flipkart: 3600, myntra: 2600, eternz: 1400 },
+  { date: '26 Aug', shopify: 9800, amazon: 4200, flipkart: 2800, myntra: 2000, eternz: 1100 },
+  { date: '27 Aug', shopify: 6400, amazon: 2800, flipkart: 1900, myntra: 1400, eternz: 800 },
+  { date: '28 Aug', shopify: 4200, amazon: 1800, flipkart: 1200, myntra: 900, eternz: 500 },
+  { date: '29 Aug', shopify: 2100, amazon: 900, flipkart: 600, myntra: 400, eternz: 200 },
+];
+
+export const netSalesVsMarginData = [
+  { date: '08-01', netSales: 38200, netMargin: 24100 },
+  { date: '08-02', netSales: 64800, netMargin: 41200 },
+  { date: '08-03', netSales: 28400, netMargin: 17100 },
+  { date: '08-04', netSales: 71200, netMargin: 45800 },
+  { date: '08-05', netSales: 42100, netMargin: 26400 },
+  { date: '08-06', netSales: 58600, netMargin: 37200 },
+  { date: '08-07', netSales: 32100, netMargin: 19400 },
+  { date: '08-08', netSales: 78400, netMargin: 51200 },
+  { date: '08-09', netSales: 44200, netMargin: 27800 },
+  { date: '08-10', netSales: 62800, netMargin: 40100 },
+  { date: '08-11', netSales: 36400, netMargin: 22100 },
+  { date: '08-12', netSales: 84100, netMargin: 54600 },
+  { date: '08-13', netSales: 96200, netMargin: 62400 },
+  { date: '08-14', netSales: 88400, netMargin: 57200 },
+  { date: '08-15', netSales: 64100, netMargin: 41400 },
+  { date: '08-16', netSales: 98800, netMargin: 64200 },
+  { date: '08-17', netSales: 48200, netMargin: 30400 },
+  { date: '08-18', netSales: 42100, netMargin: 26200 },
+  { date: '08-19', netSales: 76400, netMargin: 49600 },
+  { date: '08-20', netSales: 58200, netMargin: 37400 },
+  { date: '08-21', netSales: 46100, netMargin: 29200 },
+  { date: '08-22', netSales: 34200, netMargin: 21400 },
+  { date: '08-23', netSales: 52400, netMargin: 33600 },
+  { date: '08-24', netSales: 38100, netMargin: 24200 },
+  { date: '08-25', netSales: 24200, netMargin: 14800 },
+  { date: '08-26', netSales: 18400, netMargin: 11200 },
+  { date: '08-27', netSales: 12100, netMargin: 7400 },
+  { date: '08-28', netSales: 8200, netMargin: 4800 },
+  { date: '08-29', netSales: 4100, netMargin: 2400 },
+];
+
+export const salesSummaryData = [
+  { label: 'Gross Sales', orders: 144, amount: 1109200, isPositive: true },
+  { label: 'Discounts', orders: 89, amount: -124600, isPositive: false },
+  { label: 'Cancelled Orders', orders: 18, amount: -98400, isPositive: false },
+  { label: 'Invoiced Sales', orders: 126, amount: 886200, isPositive: true, isSubtotal: true },
+  { label: 'Returned Orders', orders: 14, amount: -124800, isPositive: false },
+  { label: 'RTO Orders', orders: 11, amount: -176681, isPositive: false },
+  { label: 'Net Sales', orders: 101, amount: 584721, isPositive: true, isTotal: true },
+];
+
+export const geographicSalesData = [
+  { rank: 1, state: 'Rajasthan', shopify: 51200, marketplace: 34119, total: 85319 },
+  { rank: 2, state: 'Maharashtra', shopify: 44800, marketplace: 29249, total: 74049 },
+  { rank: 3, state: 'Gujarat', shopify: 41600, marketplace: 27667, total: 69267 },
+  { rank: 4, state: 'Telangana', shopify: 38400, marketplace: 27189, total: 65589 },
+  { rank: 5, state: 'Uttar Pradesh', shopify: 36800, marketplace: 25332, total: 62132 },
+  { rank: 6, state: 'Tamil Nadu', shopify: 31200, marketplace: 21891, total: 53091 },
+  { rank: 7, state: 'West Bengal', shopify: 28400, marketplace: 19402, total: 47802 },
+  { rank: 8, state: 'Karnataka', shopify: 26400, marketplace: 18002, total: 44402 },
+];
+
+export const topSkusData = [
+  { rank: 1, sku: 'NKL-GLD-001', name: 'Kundan Layered Necklace Set', netSales: 124800, units: 18, orders: 14, category: 'Necklace' },
+  { rank: 2, sku: 'CMB-WED-004', name: 'Bridal Combo — Necklace + Earrings', netSales: 98400, units: 12, orders: 10, category: 'Combo' },
+  { rank: 3, sku: 'ERG-OXD-008', name: 'Oxidised Jhumka Earring Pair', netSales: 76200, units: 42, orders: 38, category: 'Earring' },
+  { rank: 4, sku: 'RNG-SLV-012', name: 'Silver Toe Ring Set (6pc)', netSales: 58600, units: 31, orders: 28, category: 'Ring' },
+  { rank: 5, sku: 'NKL-CHK-016', name: 'Choker Pearl Necklace', netSales: 52100, units: 22, orders: 19, category: 'Necklace' },
+  { rank: 6, sku: 'BNG-GLS-021', name: 'Glass Bangle Set (12pc)', netSales: 44800, units: 58, orders: 52, category: 'Bangle' },
+  { rank: 7, sku: 'BRC-GLD-025', name: 'Gold-plated Charm Bracelet', netSales: 38200, units: 16, orders: 14, category: 'Bracelet' },
+];
+
+export const returnsByChannelData = [
+  { channel: 'Shopify', returned: 4, returnPct: 4.2 },
+  { channel: 'Amazon', returned: 5, returnPct: 8.9 },
+  { channel: 'Flipkart', returned: 3, returnPct: 11.2 },
+  { channel: 'Myntra', returned: 2, returnPct: 9.8 },
+  { channel: 'Eternz', returned: 0, returnPct: 0.0 },
+];
+
+export const channelMixData = [
+  { channel: 'Shopify', netSales: 284200, pct: 48.6, color: 'var(--channel-shopify)' },
+  { channel: 'Amazon', netSales: 128400, pct: 22.0, color: 'var(--channel-amazon)' },
+  { channel: 'Flipkart', netSales: 84600, pct: 14.5, color: 'var(--channel-flipkart)' },
+  { channel: 'Myntra', netSales: 62100, pct: 10.6, color: 'var(--channel-myntra)' },
+  { channel: 'Eternz', netSales: 25421, pct: 4.3, color: 'var(--channel-eternz)' },
+];
