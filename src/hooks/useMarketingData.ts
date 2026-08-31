@@ -95,7 +95,7 @@ export function useMarketingData() {
     fetchAll();
 
     const channel = supabase
-      .channel('marketing_realtime')
+      .channel(`marketing_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'marketing_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'campaigns' }, fetchAll)
       .subscribe();

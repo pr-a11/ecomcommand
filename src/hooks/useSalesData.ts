@@ -104,7 +104,7 @@ export function useSalesData() {
     fetchAll();
 
     const channel = supabase
-      .channel('sales_realtime')
+      .channel(`sales_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales_by_channel' }, fetchAll)
       .subscribe();

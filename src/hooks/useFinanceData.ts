@@ -93,7 +93,7 @@ export function useFinanceData() {
     fetchAll();
 
     const channel = supabase
-      .channel('finance_realtime')
+      .channel(`finance_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'channel_profitability' }, fetchAll)
       .subscribe();

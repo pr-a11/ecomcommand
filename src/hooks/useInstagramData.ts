@@ -59,7 +59,7 @@ export function useInstagramData() {
     fetchAll();
 
     const channel = supabase
-      .channel('instagram_realtime')
+      .channel(`instagram_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'instagram_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'instagram_posts' }, fetchAll)
       .subscribe();

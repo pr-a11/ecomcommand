@@ -59,7 +59,7 @@ export function useCustomersData() {
     fetchAll();
 
     const channel = supabase
-      .channel('customers_realtime')
+      .channel(`customers_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'customers_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'customer_reviews' }, fetchAll)
       .subscribe();

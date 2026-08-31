@@ -79,7 +79,7 @@ export function useOperationsData() {
     fetchAll();
 
     const channel = supabase
-      .channel('operations_realtime')
+      .channel(`operations_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'operations_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ndr_orders' }, fetchAll)
       .subscribe();

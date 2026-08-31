@@ -53,7 +53,7 @@ export function useMarketplaceData() {
     fetchAll();
 
     const channel = supabase
-      .channel('marketplace_realtime')
+      .channel(`marketplace_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'marketplace_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_sync' }, fetchAll)
       .subscribe();
