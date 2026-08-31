@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -39,17 +39,17 @@ const navItems: NavItem[] = [
 ];
 
 interface SidebarProps {
-  currentPath: string;
+  currentPath?: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ currentPath, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:w-52 xl:w-56 flex-col border-r border-border bg-card flex-shrink-0">
-        <SidebarContent currentPath={currentPath} />
+        <SidebarContent />
       </aside>
 
       {/* Mobile drawer */}
@@ -71,21 +71,21 @@ export default function Sidebar({ currentPath, isOpen, onClose }: SidebarProps) 
             <X size={18} className="text-muted-foreground" />
           </button>
         </div>
-        <SidebarContent currentPath={currentPath} onItemClick={onClose} />
+        <SidebarContent onItemClick={onClose} />
       </aside>
     </>
   );
 }
 
 function SidebarContent({
-  currentPath,
   onItemClick,
 }: {
-  currentPath: string;
+  currentPath?: string;
   onItemClick?: () => void;
 }) {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const currentPath = usePathname();
 
   const handleSignOut = async () => {
     try {
