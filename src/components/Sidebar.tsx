@@ -16,6 +16,7 @@ import {
   Sparkles,
   X,
   LogOut,
+  Settings,
 } from 'lucide-react';
 
 interface NavItem {
@@ -34,6 +35,7 @@ const navItems: NavItem[] = [
   { label: 'Operations', href: '/operations', icon: <Truck size={18} /> },
   { label: 'Customers & Reviews', href: '/customers', icon: <Users size={18} /> },
   { label: 'Reports', href: '/reports', icon: <FileText size={18} /> },
+  { label: 'Configuration', href: '/configuration', icon: <Settings size={18} /> },
 ];
 
 interface SidebarProps {
