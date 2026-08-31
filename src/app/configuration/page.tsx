@@ -3,13 +3,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Settings, Eye, EyeOff, CheckCircle, XCircle, Loader2, Save, AlertCircle, Zap, ShoppingBag, Truck, Camera, Database, Wifi, WifiOff,  } from 'lucide-react';
+import { Settings, Eye, EyeOff, CheckCircle, XCircle, Loader2, Save, AlertCircle, Zap, ShoppingBag, Truck, Camera, Database, Wifi, WifiOff, Clock, RefreshCw } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Provider = 'meta_ads' | 'shopify' | 'courier' | 'instagram';
 type CredentialStatus = 'active' | 'inactive' | 'error';
 type TestResult = 'pass' | 'fail' | null;
+type SyncInterval = 'manual' | 'hourly' | 'daily' | 'weekly';
 
 interface CredentialField {
   key: string;
@@ -38,6 +39,7 @@ interface CredentialRow {
   last_tested_at: string | null;
   last_synced_at: string | null;
   error_message: string | null;
+  sync_interval?: SyncInterval;
 }
 
 interface FieldState {
@@ -119,6 +121,18 @@ const SYNC_TABLE_MAP: Record<Provider, string[]> = {
   courier: ['shipments', 'operations_kpis'],
   instagram: ['instagram_posts', 'instagram_kpis'],
 };
+
+// ─── Sync interval options ────────────────────────────────────────────────────
+
+const SYNC_INTERVAL_OPTIONS: { value: SyncInterval; label: string; ms: number | null }[] = [
+  { value: 'manual', label: 'Manual only', ms: null },
+  { value: 'hourly', label: 'Every hour', ms: 60 * 60 * 1000 },
+  { value: 'daily', label: 'Every 24 hours', ms: 24 * 60 * 60 * 1000 },
+  { value: 'weekly', label: 'Every 7 days', ms: 7 * 24 * 60 * 60 * 1000 },
+];
+
+// Providers that support recurring sync intervals
+const INTERVAL_SUPPORTED_PROVIDERS: Provider[] = ['meta_ads', 'shopify', 'courier'];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -235,6 +249,18 @@ export default function ConfigurationPage() {
 
   const [loading, setLoading] = useState(true);
 
+  // ── Sync interval state ────────────────────────────────────────────────────
+  const [syncIntervals, setSyncIntervals] = useState<Record<Provider, SyncInterval>>({
+    meta_ads: 'manual',
+    shopify: 'manual',
+    courier: 'manual',
+    instagram: 'manual',
+  });
+
+  const [savingInterval, setSavingInterval] = useState<Record<Provider, boolean>>({
+    meta_ads: false, shopify: false, courier: false, instagram: false,
+  });
+
   // ── Load existing credentials ──────────────────────────────────────────────
 
   const loadCredentials = useCallback(async () => {
@@ -260,6 +286,7 @@ export default function ConfigurationPage() {
       };
       const newLastTested: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
       const newLastSynced: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
+      const newSyncIntervals: Record<Provider, SyncInterval> = { meta_ads: 'manual', shopify: 'manual', courier: 'manual', instagram: 'manual' };
 
       rows.forEach((row) => {
         if (grouped[row.provider]) {
@@ -267,6 +294,7 @@ export default function ConfigurationPage() {
           newStatuses[row.provider] = row.status;
           if (row.last_tested_at) newLastTested[row.provider] = row.last_tested_at;
           if (row.last_synced_at) newLastSynced[row.provider] = row.last_synced_at;
+          if (row.sync_interval) newSyncIntervals[row.provider] = row.sync_interval as SyncInterval;
         }
       });
 
@@ -285,6 +313,7 @@ export default function ConfigurationPage() {
       setStatuses(newStatuses);
       setLastTested(newLastTested);
       setLastSynced(newLastSynced);
+      setSyncIntervals(newSyncIntervals);
     } catch (err: any) {
       console.error('Failed to load credentials:', err);
     } finally {
@@ -295,6 +324,49 @@ export default function ConfigurationPage() {
   useEffect(() => {
     loadCredentials();
   }, [loadCredentials]);
+
+  // ── Auto-refresh via interval ──────────────────────────────────────────────
+
+  useEffect(() => {
+    const timers: Partial<Record<Provider, ReturnType<typeof setInterval>>> = {};
+
+    INTERVAL_SUPPORTED_PROVIDERS.forEach((provider) => {
+      const intervalConfig = SYNC_INTERVAL_OPTIONS.find((o) => o.value === syncIntervals[provider]);
+      if (!intervalConfig || !intervalConfig.ms) return;
+      if (statuses[provider] !== 'active') return;
+
+      timers[provider] = setInterval(() => {
+        handleSync(provider);
+      }, intervalConfig.ms);
+    });
+
+    return () => {
+      Object.values(timers).forEach((t) => t && clearInterval(t));
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncIntervals, statuses]);
+
+  // ── Save sync interval ─────────────────────────────────────────────────────
+
+  const handleSaveInterval = async (provider: Provider, interval: SyncInterval) => {
+    setSyncIntervals((prev) => ({ ...prev, [provider]: interval }));
+    setSavingInterval((prev) => ({ ...prev, [provider]: true }));
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from('api_credentials')
+        .update({ sync_interval: interval, updated_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .eq('provider', provider);
+    } catch (err: any) {
+      console.error('Failed to save sync interval:', err);
+    } finally {
+      setSavingInterval((prev) => ({ ...prev, [provider]: false }));
+    }
+  };
 
   // ── Field handlers ─────────────────────────────────────────────────────────
 
@@ -735,6 +807,10 @@ export default function ConfigurationPage() {
           const testResult = testResults[provider];
           const hasAnySavedField = fieldDefs.some((f) => fields[provider]?.[f.key]?.saved);
           const hasAnyFilledField = fieldDefs.some((f) => fields[provider]?.[f.key]?.value?.trim());
+          const supportsInterval = INTERVAL_SUPPORTED_PROVIDERS.includes(provider);
+          const currentInterval = syncIntervals[provider];
+          const isSavingInterval = savingInterval[provider];
+          const activeIntervalLabel = SYNC_INTERVAL_OPTIONS.find((o) => o.value === currentInterval)?.label ?? 'Manual only';
 
           return (
             <div
@@ -800,6 +876,48 @@ export default function ConfigurationPage() {
                     );
                   })}
                 </div>
+
+                {/* Sync Interval Selector */}
+                {supportsInterval && (
+                  <div className="mt-5 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-2">
+                        <Clock size={14} className="text-gray-500" />
+                        <span className="text-xs font-semibold text-gray-700">Auto-Sync Interval</span>
+                        {currentInterval !== 'manual' && providerStatus === 'active' && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-900 text-white">
+                            <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
+                            {activeIntervalLabel}
+                          </span>
+                        )}
+                        {currentInterval !== 'manual' && providerStatus !== 'active' && (
+                          <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                            Paused — connect first
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={currentInterval}
+                          onChange={(e) => handleSaveInterval(provider, e.target.value as SyncInterval)}
+                          disabled={isSavingInterval || !hasAnySavedField}
+                          className="text-xs border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 focus:bg-white focus:border-gray-400 focus:ring-2 focus:ring-gray-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          {SYNC_INTERVAL_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                        {isSavingInterval && <Loader2 size={13} className="animate-spin text-gray-400" />}
+                      </div>
+                    </div>
+                    {currentInterval !== 'manual' && (
+                      <p className="text-xs text-gray-400 mt-1.5">
+                        Dashboard data will auto-refresh {currentInterval === 'hourly' ? 'every hour' : currentInterval === 'daily' ? 'every 24 hours' : 'every 7 days'} while this page is open.
+                        {providerStatus !== 'active' && ' Requires an active connection.'}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Error / Success / Sync Banner */}
                 {hasError && (
