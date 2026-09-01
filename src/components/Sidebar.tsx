@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -16,6 +16,7 @@ import {
   Sparkles,
   X,
   LogOut,
+  Settings,
 } from 'lucide-react';
 
 interface NavItem {
@@ -26,64 +27,65 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: <LayoutDashboard size={18} /> },
-  { label: 'Finance', href: '/finance', icon: <TrendingUp size={18} /> },
-  { label: 'Marketing', href: '/marketing', icon: <Megaphone size={18} /> },
-  { label: 'Instagram', href: '/instagram', icon: <Camera size={18} /> },
-  { label: 'Marketplace', href: '/marketplace', icon: <Store size={18} /> },
-  { label: 'Operations', href: '/operations', icon: <Truck size={18} /> },
-  { label: 'Customers & Reviews', href: '/customers', icon: <Users size={18} /> },
-  { label: 'Reports', href: '/reports', icon: <FileText size={18} /> },
+  { label: 'Dashboard', href: '/', icon: <LayoutDashboard size={16} /> },
+  { label: 'Finance', href: '/finance', icon: <TrendingUp size={16} /> },
+  { label: 'Marketing', href: '/marketing', icon: <Megaphone size={16} /> },
+  { label: 'Instagram', href: '/instagram', icon: <Camera size={16} /> },
+  { label: 'Marketplace', href: '/marketplace', icon: <Store size={16} /> },
+  { label: 'Operations', href: '/operations', icon: <Truck size={16} /> },
+  { label: 'Customers & Reviews', href: '/customers', icon: <Users size={16} /> },
+  { label: 'Reports', href: '/reports', icon: <FileText size={16} /> },
+  { label: 'Configuration', href: '/configuration', icon: <Settings size={16} /> },
 ];
 
 interface SidebarProps {
-  currentPath: string;
+  currentPath?: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function Sidebar({ currentPath, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:w-52 xl:w-56 flex-col border-r border-border bg-card flex-shrink-0">
-        <SidebarContent currentPath={currentPath} />
+      <aside className="hidden lg:flex lg:w-48 xl:w-52 flex-col border-r border-gray-100 bg-white flex-shrink-0">
+        <SidebarContent />
       </aside>
 
       {/* Mobile drawer */}
       <aside
-        className={`fixed left-0 top-0 z-30 h-full w-64 flex-col border-r border-border bg-card shadow-card-lift transition-transform duration-300 ease-in-out lg:hidden flex ${
+        className={`fixed left-0 top-0 z-30 h-full w-60 flex-col border-r border-gray-100 bg-white shadow-lg transition-transform duration-300 ease-in-out lg:hidden flex ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <AppLogo size={28} />
-            <span className="font-bold text-base text-foreground tracking-tight">D2C Dashboard</span>
+            <AppLogo size={26} />
+            <span className="font-bold text-sm text-gray-900 tracking-tight">EcomCommand</span>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+            className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
             aria-label="Close navigation"
           >
-            <X size={18} className="text-muted-foreground" />
+            <X size={16} className="text-gray-400" />
           </button>
         </div>
-        <SidebarContent currentPath={currentPath} onItemClick={onClose} />
+        <SidebarContent onItemClick={onClose} />
       </aside>
     </>
   );
 }
 
 function SidebarContent({
-  currentPath,
   onItemClick,
 }: {
-  currentPath: string;
+  currentPath?: string;
   onItemClick?: () => void;
 }) {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const currentPath = usePathname();
 
   const handleSignOut = async () => {
     try {
@@ -102,9 +104,9 @@ function SidebarContent({
   return (
     <div className="flex flex-col h-full">
       {/* Logo — desktop only */}
-      <div className="hidden lg:flex items-center gap-2.5 px-4 py-4 border-b border-border">
-        <AppLogo size={28} />
-        <span className="font-bold text-sm text-foreground tracking-tight">D2C Dashboard</span>
+      <div className="hidden lg:flex items-center gap-2.5 px-4 py-4 border-b border-gray-100">
+        <AppLogo size={26} />
+        <span className="font-bold text-sm text-gray-900 tracking-tight">EcomCommand</span>
       </div>
 
       {/* Nav items */}
@@ -118,10 +120,10 @@ function SidebarContent({
               onClick={onItemClick}
               className={`nav-item ${isActive ? 'nav-item-active' : ''}`}
             >
-              <span className="flex-shrink-0">{item.icon}</span>
-              <span className="text-sm">{item.label}</span>
+              <span className="flex-shrink-0 text-gray-400">{item.icon}</span>
+              <span>{item.label}</span>
               {item.badge && (
-                <span className="ml-auto text-xs font-semibold bg-negative text-white rounded-full px-1.5 py-0.5">
+                <span className="ml-auto text-xs font-semibold bg-red-100 text-red-600 rounded-full px-1.5 py-0.5">
                   {item.badge}
                 </span>
               )}
@@ -129,37 +131,37 @@ function SidebarContent({
           );
         })}
 
-        <div className="my-2 border-t border-border" />
+        <div className="my-2 border-t border-gray-100" />
 
         <Link
           href="/ask-ai"
           onClick={onItemClick}
           className={`nav-item ${currentPath === '/ask-ai' ? 'nav-item-active' : ''}`}
         >
-          <Sparkles size={18} />
-          <span className="text-sm">Ask AI</span>
-          <span className="ml-auto text-xs font-semibold bg-violet-100 text-violet-700 rounded-full px-1.5 py-0.5">
+          <Sparkles size={16} className="text-violet-400 flex-shrink-0" />
+          <span>Ask AI</span>
+          <span className="ml-auto text-xs font-semibold bg-violet-50 text-violet-600 rounded-full px-1.5 py-0.5">
             AI
           </span>
         </Link>
       </nav>
 
       {/* Account chip */}
-      <div className="p-3 border-t border-border">
-        <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-muted transition-colors">
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-primary-foreground">{initials}</span>
+      <div className="p-3 border-t border-gray-100">
+        <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+          <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-bold text-white">{initials}</span>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-600 text-foreground truncate">{displayName}</p>
-            <p className="text-xs text-muted-foreground">{roleLabel}</p>
+            <p className="text-xs font-semibold text-gray-800 truncate">{displayName}</p>
+            <p className="text-xs text-gray-400">{roleLabel}</p>
           </div>
           <button
             onClick={handleSignOut}
-            className="p-1 rounded-md hover:bg-muted-foreground/10 transition-colors flex-shrink-0"
+            className="p-1 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0"
             title="Sign out"
           >
-            <LogOut size={14} className="text-muted-foreground" />
+            <LogOut size={13} className="text-gray-400" />
           </button>
         </div>
       </div>

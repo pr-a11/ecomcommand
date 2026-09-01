@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import * as mockFinance from '@/data/mock/finance';
 
 export function useFinanceData() {
-  const [financeKpiData, setFinanceKpiData] = useState<any>(null);
-  const [plWaterfallData, setPlWaterfallData] = useState<any[]>([]);
-  const [netSalesOverTimeData, setNetSalesOverTimeData] = useState<any[]>([]);
-  const [contributionMarginTrendData, setContributionMarginTrendData] = useState<any[]>([]);
-  const [geographicSalesFinance, setGeographicSalesFinance] = useState<any[]>([]);
-  const [channelProfitabilityData, setChannelProfitabilityData] = useState<any[]>([]);
-  const [marketplaceFeeData, setMarketplaceFeeData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [financeKpiData, setFinanceKpiData] = useState<any>(mockFinance.financeKpiData);
+  const [plWaterfallData, setPlWaterfallData] = useState<any[]>(mockFinance.plWaterfallData);
+  const [netSalesOverTimeData, setNetSalesOverTimeData] = useState<any[]>(mockFinance.netSalesOverTimeData);
+  const [contributionMarginTrendData, setContributionMarginTrendData] = useState<any[]>(mockFinance.contributionMarginTrendData);
+  const [geographicSalesFinance, setGeographicSalesFinance] = useState<any[]>(mockFinance.geographicSalesFinance);
+  const [channelProfitabilityData, setChannelProfitabilityData] = useState<any[]>(mockFinance.channelProfitabilityData);
+  const [marketplaceFeeData, setMarketplaceFeeData] = useState<any[]>(mockFinance.marketplaceFeeData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,39 +45,39 @@ export function useFinanceData() {
           });
         }
 
-        if (waterfallRes.data) {
+        if (waterfallRes.data && waterfallRes.data.length > 0) {
           setPlWaterfallData(waterfallRes.data.map((r: any) => ({
             label: r.label, value: r.value, type: r.entry_type as 'positive' | 'negative' | 'subtotal' | 'total',
           })));
         }
 
-        if (netSalesRes.data) {
+        if (netSalesRes.data && netSalesRes.data.length > 0) {
           setNetSalesOverTimeData(netSalesRes.data.map((r: any) => ({
             date: r.date_label, current: r.current_period, previous: r.previous_period,
           })));
         }
 
-        if (marginRes.data) {
+        if (marginRes.data && marginRes.data.length > 0) {
           setContributionMarginTrendData(marginRes.data.map((r: any) => ({
             date: r.date_label, margin: r.margin,
           })));
         }
 
-        if (geoRes.data) {
+        if (geoRes.data && geoRes.data.length > 0) {
           setGeographicSalesFinance(geoRes.data.map((r: any) => ({
             rank: r.rank_order, state: r.state, shopify: r.shopify,
             marketplace: r.marketplace, total: r.total,
           })));
         }
 
-        if (profitRes.data) {
+        if (profitRes.data && profitRes.data.length > 0) {
           setChannelProfitabilityData(profitRes.data.map((r: any) => ({
             id: r.id, channel: r.channel, grossSales: r.gross_sales, fees: r.fees,
             netRealisation: r.net_realisation, netMarginPct: r.net_margin_pct, takeRate: r.take_rate,
           })));
         }
 
-        if (feesRes.data) {
+        if (feesRes.data && feesRes.data.length > 0) {
           setMarketplaceFeeData(feesRes.data.map((r: any) => ({
             id: r.id, marketplace: r.marketplace, referralFee: r.referral_fee,
             closingFee: r.closing_fee, shippingFee: r.shipping_fee,
@@ -93,7 +94,7 @@ export function useFinanceData() {
     fetchAll();
 
     const channel = supabase
-      .channel('finance_realtime')
+      .channel(`finance_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'channel_profitability' }, fetchAll)
       .subscribe();

@@ -4,24 +4,22 @@ import DashboardKpiGrid from './components/DashboardKpiGrid';
 import SalesByChannelChart from './components/SalesByChannelChart';
 import NetSalesVsMarginChart from './components/NetSalesVsMarginChart';
 import SalesSummaryTable from './components/SalesSummaryTable';
-import GeographicSalesPanel from './components/GeographicSalesPanel';
 import ChannelMixPanel from './components/ChannelMixPanel';
 import TopSkusPanel from './components/TopSkusPanel';
 import ReturnsByChannelTable from './components/ReturnsByChannelTable';
+import GeographicSalesPanel from './components/GeographicSalesPanel';
+import CodPrepaidCard from './components/CodPrepaidCard';
 
 export default function DashboardPage() {
   return (
     <AppLayout currentPath="/">
-      <div className="space-y-6">
-        {/* Page header */}
+      <div className="space-y-5">
+        {/* Page header - Brandstack style */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-700 text-foreground">Dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Aug 1 – Aug 29, 2026 · All Channels</p>
-          </div>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
           <a
             href="#funnel"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-600 hover:bg-primary/20 transition-colors"
+            className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors font-medium text-gray-600"
           >
             Sales Journey →
           </a>
@@ -30,27 +28,44 @@ export default function DashboardPage() {
         {/* KPI Grid */}
         <DashboardKpiGrid />
 
-        {/* Charts row */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        {/* OVERVIEW section */}
+        <div className="bs-section-divider">
+          <span className="text-gray-300 text-sm">✦</span>
+          <span className="bs-section-label">Overview</span>
+          <div className="bs-section-line" />
+        </div>
+
+        {/* Charts row - Sales by Channel + Net Sales vs Margin */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <SalesByChannelChart />
           <NetSalesVsMarginChart />
         </div>
 
-        {/* Sales Summary + Channel Mix */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        {/* PERFORMANCE section */}
+        <div className="bs-section-divider">
+          <span className="text-gray-300 text-sm">✦</span>
+          <span className="bs-section-label">Performance</span>
+          <div className="bs-section-line" />
+        </div>
+
+        {/* COD vs Prepaid + Channel Mix */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <CodPrepaidCard />
+          <ChannelMixPanel />
+        </div>
+
+        {/* Sales Summary + Top SKUs */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <div className="lg:col-span-3">
             <SalesSummaryTable />
           </div>
           <div className="lg:col-span-2">
-            <ChannelMixPanel />
+            <TopSkusPanel />
           </div>
         </div>
 
-        {/* Geographic + Top SKUs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <GeographicSalesPanel />
-          <TopSkusPanel />
-        </div>
+        {/* Geographic */}
+        <GeographicSalesPanel />
 
         {/* Returns */}
         <ReturnsByChannelTable />

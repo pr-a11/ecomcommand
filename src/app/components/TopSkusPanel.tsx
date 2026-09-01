@@ -11,7 +11,7 @@ const categoryColors: Record<string, string> = {
   Earring: 'bg-pink-100 text-pink-700',
   Ring: 'bg-amber-100 text-amber-700',
   Bangle: 'bg-orange-100 text-orange-700',
-  Bracelet: 'bg-emerald-100 text-emerald-700',
+  Bracelet: 'bg-gray-100 text-gray-700',
 };
 
 export default function TopSkusPanel() {

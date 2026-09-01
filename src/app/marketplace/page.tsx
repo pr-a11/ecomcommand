@@ -55,7 +55,7 @@ function StarRating({ value }: { value: number }) {
 }
 
 function HealthBar({ score, label }: { score: number; label: string }) {
-  const color = score >= 80 ? '#10B981' : score >= 60 ? '#F59E0B' : '#EF4444';
+  const color = score >= 80 ? '#111827' : score >= 60 ? '#F59E0B' : '#EF4444';
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-gray-600 w-40 flex-shrink-0">{label}</span>
@@ -73,7 +73,7 @@ export default function MarketplacePage() {
   const { marketplaceKpis, inventorySyncData, isLoading, error } = useMarketplaceData();
 
   const statusColor = (status: string) => {
-    if (status === 'In Stock') return 'text-emerald-600 bg-emerald-50';
+    if (status === 'In Stock') return 'text-gray-700 bg-gray-100';
     if (status === 'Low Stock') return 'text-amber-600 bg-amber-50';
     if (status === 'Critical Low') return 'text-red-600 bg-red-50';
     return 'text-orange-600 bg-orange-50';
@@ -147,7 +147,7 @@ export default function MarketplacePage() {
                   <p className="text-xs text-gray-500 font-medium mb-1">{metric.label}</p>
                   <p className="text-2xl font-bold text-gray-900 mb-1">{val}</p>
                   {metric.change !== undefined && (
-                    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${isPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full ${isPositive ? 'bg-gray-100 text-gray-800' : 'bg-red-50 text-red-600'}`}>
                       {isPositive ? '↑' : '↓'} {Math.abs(metric.change)}%
                     </span>
                   )}
@@ -172,7 +172,7 @@ export default function MarketplacePage() {
                   <Legend />
                   <Line type="monotone" dataKey="product1" name="Kundan Necklace" stroke="#F97316" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="product2" name="Bridal Combo" stroke="#8B5CF6" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="product3" name="Jhumka Earrings" stroke="#10B981" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="product3" name="Jhumka Earrings" stroke="#374151" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -234,7 +234,7 @@ export default function MarketplacePage() {
                   <tr key={row.sku} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-sm font-medium text-gray-900 max-w-[180px] truncate">{row.product}</td>
                     <td className="px-4 py-3 text-xs text-gray-400 font-mono">{row.sku}</td>
-                    <td className="px-4 py-3 text-sm text-center font-semibold text-emerald-700">{row.shopify}</td>
+                    <td className="px-4 py-3 text-sm text-center font-semibold text-gray-800">{row.shopify}</td>
                     <td className="px-4 py-3 text-sm text-center font-semibold text-orange-600">{row.amazon}</td>
                     <td className="px-4 py-3 text-sm text-center font-semibold text-blue-600">{row.flipkart}</td>
                     <td className="px-4 py-3 text-sm text-center font-semibold text-pink-600">{row.myntra}</td>

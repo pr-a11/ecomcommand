@@ -6,11 +6,11 @@
   :root {
     --background: #f7f7f8;
     --foreground: #0f172a;
-    --primary: #16a34a;
+    --primary: #111827;
     --primary-foreground: #ffffff;
     --secondary: #f1f5f9;
     --secondary-foreground: #475569;
-    --accent: #0d9488;
+    --accent: #1f2937;
     --accent-foreground: #ffffff;
     --muted: #f1f5f9;
     --muted-foreground: #64748b;
@@ -18,16 +18,16 @@
     --card-foreground: #0f172a;
     --border: #e2e8f0;
     --input: #e2e8f0;
-    --ring: #16a34a;
-    --radius: 12px;
-    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --ring: #111827;
+    --radius: 10px;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
-    /* Channel colors */
-    --channel-shopify: #16a34a;
+    /* Channel colors - Brandstack exact */
+    --channel-shopify: #22c55e;
     --channel-amazon: #f97316;
-    --channel-flipkart: #3b82f6;
+    --channel-flipkart: #f59e0b;
     --channel-myntra: #ec4899;
-    --channel-eternz: #0d9488;
+    --channel-eternz: #14b8a6;
     --channel-meta: #6366f1;
     --channel-google: #0ea5e9;
 
@@ -37,7 +37,7 @@
     --cat-earring: #ec4899;
     --cat-combo: #06b6d4;
     --cat-bangle: #f97316;
-    --cat-bracelet: #10b981;
+    --cat-bracelet: #374151;
 
     /* Semantic */
     --positive: #16a34a;
@@ -57,6 +57,8 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    letter-spacing: -0.01em;
   }
 
   html {
@@ -107,11 +109,11 @@
     transition: box-shadow 200ms ease, transform 200ms ease;
   }
   .card-hover:hover {
-    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.10);
-    transform: translateY(-2px);
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.07);
   }
 
-  .insight-best { background-color: #f0fdf4; border-left: 3px solid var(--positive); }
+  /* Brandstack insight cards */
+  .insight-best { background-color: #f8fafc; border-left: 3px solid #16a34a; }
   .insight-attention { background-color: #fef2f2; border-left: 3px solid var(--negative); }
   .insight-trend { background-color: #eff6ff; border-left: 3px solid #3b82f6; }
   .insight-opportunity { background-color: #fffbeb; border-left: 3px solid var(--warning); }
@@ -121,26 +123,135 @@
     letter-spacing: -0.02em;
   }
 
-  .gradient-shopify {
-    background: linear-gradient(135deg, #16a34a22 0%, #16a34a05 100%);
-  }
-
-  .waterfall-positive { fill: #16a34a; }
+  .waterfall-positive { fill: #111827; }
   .waterfall-negative { fill: #dc2626; }
   .waterfall-neutral { fill: #94a3b8; }
+
+  /* Brandstack section divider */
+  .bs-section-divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 12px 0;
+    margin-bottom: 16px;
+  }
+
+  .bs-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+
+  .bs-section-line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--border);
+  }
+
+  /* Animate pulse dot */
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
 }
 
 @layer components {
+  /* ─── Brandstack KPI card ─── */
+  .bs-kpi-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px 10px;
+    transition: box-shadow 150ms ease;
+    cursor: default;
+    overflow: hidden;
+  }
+  .bs-kpi-card:hover {
+    box-shadow: 0 1px 8px 0 rgba(0,0,0,0.06);
+  }
+
+  .bs-kpi-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    line-height: 1;
+  }
+
+  .bs-kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bs-trend-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  .bs-trend-positive {
+    background-color: #dcfce7;
+    color: #15803d;
+  }
+
+  .bs-trend-negative {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .bs-trend-neutral {
+    background-color: #f1f5f9;
+    color: #64748b;
+  }
+
+  /* ─── Brandstack chart card ─── */
+  .bs-chart-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .bs-chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  .bs-chart-subtitle {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  /* ─── Legacy kpi-card kept for compatibility ─── */
   .kpi-card {
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    transition: box-shadow 200ms ease, transform 200ms ease;
+    border-radius: 8px;
+    padding: 14px 16px 10px;
+    transition: box-shadow 150ms ease;
   }
   .kpi-card:hover {
-    box-shadow: 0 4px 20px 0 rgba(0,0,0,0.08);
-    transform: translateY(-1px);
+    box-shadow: 0 2px 10px 0 rgba(0,0,0,0.06);
   }
 
   .section-header {
@@ -161,9 +272,9 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
     font-weight: 600;
     background-color: #dcfce7;
     color: #15803d;
@@ -173,9 +284,9 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
     font-weight: 600;
     background-color: #fee2e2;
     color: #b91c1c;
@@ -185,98 +296,113 @@
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
     font-weight: 600;
     background-color: #f1f5f9;
     color: #64748b;
   }
 
+  /* ─── Status badges ─── */
   .status-scale {
     display: inline-flex;
     align-items: center;
-    padding: 2px 10px;
-    border-radius: 999px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
     background-color: #dcfce7;
     color: #15803d;
+    border: 1px solid #bbf7d0;
   }
 
   .status-hold {
     display: inline-flex;
     align-items: center;
-    padding: 2px 10px;
-    border-radius: 999px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
     background-color: #fef3c7;
     color: #92400e;
+    border: 1px solid #fde68a;
   }
 
   .status-cut {
     display: inline-flex;
     align-items: center;
-    padding: 2px 10px;
-    border-radius: 999px;
+    padding: 2px 8px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 600;
     background-color: #fee2e2;
     color: #b91c1c;
+    border: 1px solid #fecaca;
   }
 
   .chart-card {
     background-color: var(--card);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-radius: 10px;
     padding: 20px;
   }
 
+  /* ─── Navigation ─── */
   .nav-item {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 500;
-    color: var(--muted-foreground);
+    color: #64748b;
     transition: background-color 150ms ease, color 150ms ease;
     cursor: pointer;
     text-decoration: none;
+    letter-spacing: -0.01em;
   }
 
   .nav-item:hover {
-    background-color: var(--muted);
-    color: var(--foreground);
+    background-color: #f1f5f9;
+    color: #0f172a;
   }
 
   .nav-item-active {
-    background-color: #dcfce7;
-    color: #15803d;
+    background-color: #f1f5f9;
+    color: #0f172a;
     font-weight: 600;
   }
 
-  .ranked-row {
-    display: flex;
+  /* ─── Channel filter pills ─── */
+  .bs-channel-pill {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+    border: 1px solid transparent;
   }
 
-  .rank-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background-color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted-foreground);
-    flex-shrink: 0;
+  .bs-channel-pill-inactive {
+    background-color: transparent;
+    color: #64748b;
+    border-color: #e2e8f0;
+  }
+
+  .bs-channel-pill-inactive:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+  }
+
+  .bs-channel-pill-active-all {
+    background-color: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
   }
 }

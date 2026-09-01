@@ -82,3 +82,10 @@ export const netSalesOverTimeMarketing = [
   { date: 'Aug 25', current: 24200, previous: 12400 },
   { date: 'Aug 29', current: 4100, previous: 2100 },
 ];
+function mockMarketing(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockMarketing is not implemented yet.', args);
+  return null;
+}
+
+export default mockMarketing;

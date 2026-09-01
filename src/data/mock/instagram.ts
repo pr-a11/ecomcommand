@@ -58,3 +58,11 @@ export const storyPerformanceData = {
   impressions: 124800,
   exits: 31.6,
 };
+
+function mockInstagram(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockInstagram is not implemented yet.', args);
+  return null;
+}
+
+export default mockInstagram;

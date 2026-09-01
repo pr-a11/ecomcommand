@@ -1,38 +1,44 @@
 'use client';
 import React from 'react';
-import { motion } from 'framer-motion';
 import { useMarketingData } from '@/hooks/useMarketingData';
-import SectionHeader from '@/components/ui/SectionHeader';
-import { Sparkles, TrendingUp, AlertTriangle, Activity, Lightbulb } from 'lucide-react';
+import { Info, Settings2, TrendingUp, AlertTriangle, Activity, Lightbulb } from 'lucide-react';
 
 const insightConfig = {
   best: {
-    icon: <TrendingUp size={16} />,
-    iconBg: 'bg-green-100',
-    iconColor: 'text-primary',
-    labelColor: 'text-primary',
-    cardClass: 'insight-best',
+    icon: TrendingUp,
+    iconBg: 'bg-emerald-50',
+    iconColor: 'text-emerald-600',
+    labelColor: 'text-emerald-700',
+    label: 'BEST PERFORMER',
+    borderColor: 'border-l-emerald-500',
+    cardBg: 'bg-white',
   },
   attention: {
-    icon: <AlertTriangle size={16} />,
-    iconBg: 'bg-red-100',
-    iconColor: 'text-negative',
-    labelColor: 'text-negative',
-    cardClass: 'insight-attention',
+    icon: AlertTriangle,
+    iconBg: 'bg-red-50',
+    iconColor: 'text-red-500',
+    labelColor: 'text-red-600',
+    label: 'NEEDS ATTENTION',
+    borderColor: 'border-l-red-400',
+    cardBg: 'bg-white',
   },
   trend: {
-    icon: <Activity size={16} />,
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-channel-flipkart',
-    labelColor: 'text-channel-flipkart',
-    cardClass: 'insight-trend',
+    icon: Activity,
+    iconBg: 'bg-blue-50',
+    iconColor: 'text-blue-500',
+    labelColor: 'text-blue-600',
+    label: 'TREND',
+    borderColor: 'border-l-blue-400',
+    cardBg: 'bg-white',
   },
   opportunity: {
-    icon: <Lightbulb size={16} />,
-    iconBg: 'bg-amber-100',
-    iconColor: 'text-warning',
-    labelColor: 'text-warning',
-    cardClass: 'insight-opportunity',
+    icon: Lightbulb,
+    iconBg: 'bg-amber-50',
+    iconColor: 'text-amber-500',
+    labelColor: 'text-amber-600',
+    label: 'OPPORTUNITY',
+    borderColor: 'border-l-amber-400',
+    cardBg: 'bg-white',
   },
 };
 
@@ -40,36 +46,41 @@ export default function MarketingInsightsPanel() {
   const { marketingInsights } = useMarketingData();
 
   return (
-    <div className="chart-card h-full flex flex-col">
-      <SectionHeader
-        icon={<Sparkles size={14} />}
-        label="Marketing Insights"
-      />
-      <p className="text-xs text-muted-foreground mb-4">Key performance signals · Last 30 days</p>
+    <div className="bs-chart-card h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2">
+          <h3 className="bs-chart-title">Marketing Insights</h3>
+          <Info size={12} className="text-gray-300" />
+        </div>
+        <button className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+          <Settings2 size={13} className="text-gray-400" />
+        </button>
+      </div>
+      <p className="bs-chart-subtitle mb-4">Key performance signals · Last 30 days</p>
 
       <div className="flex flex-col gap-3 flex-1">
-        {marketingInsights?.map((insight, i) => {
-          const config = insightConfig?.[insight?.type];
+        {marketingInsights?.map((insight) => {
+          const config = insightConfig?.[insight?.type as keyof typeof insightConfig];
+          if (!config) return null;
+          const IconComp = config.icon;
           return (
-            <motion.div
+            <div
               key={insight?.id}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.15, duration: 0.35, ease: 'easeOut' }}
-              className={`rounded-lg p-3 ${config?.cardClass}`}
+              className={`rounded-lg p-3 border border-gray-100 border-l-4 ${config.borderColor} ${config.cardBg}`}
             >
               <div className="flex items-start gap-2.5">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${config?.iconBg}`}>
-                  <span className={config?.iconColor}>{config?.icon}</span>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${config.iconBg}`}>
+                  <IconComp size={14} className={config.iconColor} />
                 </div>
-                <div>
-                  <p className={`text-xs font-700 uppercase tracking-wider mb-0.5 ${config?.labelColor}`}>
-                    {insight?.label}
+                <div className="min-w-0">
+                  <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${config.labelColor}`}>
+                    {insight?.label || config.label}
                   </p>
-                  <p className="text-xs text-foreground leading-relaxed">{insight?.text}</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">{insight?.text}</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

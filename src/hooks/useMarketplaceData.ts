@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import * as mockMarketplace from '@/data/mock/marketplace';
 
 export function useMarketplaceData() {
-  const [marketplaceKpis, setMarketplaceKpis] = useState<any>(null);
-  const [inventorySyncData, setInventorySyncData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [marketplaceKpis, setMarketplaceKpis] = useState<any>(mockMarketplace.marketplaceKpis);
+  const [inventorySyncData, setInventorySyncData] = useState<any[]>(mockMarketplace.inventorySyncData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function useMarketplaceData() {
           setMarketplaceKpis(kpis);
         }
 
-        if (inventoryRes.data) {
+        if (inventoryRes.data && inventoryRes.data.length > 0) {
           setInventorySyncData(inventoryRes.data.map((r: any) => ({
             product: r.product, sku: r.sku, shopify: r.shopify,
             amazon: r.amazon, flipkart: r.flipkart, myntra: r.myntra,
@@ -53,7 +54,7 @@ export function useMarketplaceData() {
     fetchAll();
 
     const channel = supabase
-      .channel('marketplace_realtime')
+      .channel(`marketplace_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'marketplace_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_sync' }, fetchAll)
       .subscribe();

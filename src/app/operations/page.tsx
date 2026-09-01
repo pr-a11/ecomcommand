@@ -24,7 +24,7 @@ function StatCard({ label, value, sub, change, isAlert }: {
       <p className={`text-3xl font-bold mb-1 ${isAlert ? 'text-red-600' : 'text-gray-900'}`}>{value}</p>
       {sub && <p className="text-xs text-gray-400">{sub}</p>}
       {change !== undefined && (
-        <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full mt-1 ${change >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+        <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full mt-1 ${change >= 0 ? 'bg-gray-100 text-gray-800' : 'bg-red-50 text-red-600'}`}>
           {change >= 0 ? '↑' : '↓'} {Math.abs(change)}{typeof change === 'number' && change < 5 ? '' : '%'}
         </span>
       )}
@@ -36,7 +36,7 @@ const urgencyColor = (u: string) => {
   if (u === 'critical') return 'bg-red-100 text-red-700';
   if (u === 'high') return 'bg-orange-100 text-orange-700';
   if (u === 'medium') return 'bg-amber-100 text-amber-700';
-  return 'bg-emerald-100 text-emerald-700';
+  return 'bg-gray-100 text-gray-700';
 };
 
 export default function OperationsPage() {
@@ -83,7 +83,7 @@ export default function OperationsPage() {
               <p className="text-xs text-gray-500 font-medium mb-1">{operationsKpis.avgDeliveryDays.label}</p>
               <p className="text-3xl font-bold text-gray-900 mb-1">{operationsKpis.avgDeliveryDays.value}</p>
               <p className="text-xs text-gray-400">days avg</p>
-              <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full mt-1 bg-emerald-50 text-emerald-700">
+              <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-full mt-1 bg-gray-100 text-gray-800">
                 ↓ {Math.abs(operationsKpis.avgDeliveryDays.change ?? 0)} days
               </span>
             </div>
@@ -132,13 +132,13 @@ export default function OperationsPage() {
                       <td className="px-4 py-3 text-sm font-semibold text-gray-900">{row.courier}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{row.shipments}</td>
                       <td className="px-4 py-3">
-                        <span className={`text-sm font-semibold ${row.deliveredPct >= 95 ? 'text-emerald-600' : row.deliveredPct >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
+                        <span className={`text-sm font-semibold ${row.deliveredPct >= 95 ? 'text-gray-800' : row.deliveredPct >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
                           {row.deliveredPct}%
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-700">{row.avgDays}d</td>
                       <td className="px-4 py-3">
-                        <span className={`text-sm font-semibold ${row.ndrRate <= 3 ? 'text-emerald-600' : row.ndrRate <= 5 ? 'text-amber-600' : 'text-red-600'}`}>
+                        <span className={`text-sm font-semibold ${row.ndrRate <= 3 ? 'text-gray-800' : row.ndrRate <= 5 ? 'text-amber-600' : 'text-red-600'}`}>
                           {row.ndrRate}%
                         </span>
                       </td>
@@ -164,7 +164,7 @@ export default function OperationsPage() {
                     />
                   </div>
                   <span className="text-xs font-semibold text-gray-700 w-8 text-right">{row.deliveries}</span>
-                  <span className={`text-xs font-semibold w-12 text-right ${row.onTime >= 95 ? 'text-emerald-600' : row.onTime >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
+                  <span className={`text-xs font-semibold w-12 text-right ${row.onTime >= 95 ? 'text-gray-800' : row.onTime >= 90 ? 'text-amber-600' : 'text-red-600'}`}>
                     {row.onTime}%
                   </span>
                 </div>

@@ -14,7 +14,7 @@ const channelColors: Record<string, string> = {
 };
 
 function MarginBadge({ pct }: { pct: number }) {
-  if (pct >= 65) return <span className="text-xs font-600 text-primary bg-green-50 px-2 py-0.5 rounded-full">{pct}%</span>;
+  if (pct >= 65) return <span className="text-xs font-600 text-primary bg-gray-100 px-2 py-0.5 rounded-full">{pct}%</span>;
   if (pct >= 55) return <span className="text-xs font-600 text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">{pct}%</span>;
   return <span className="text-xs font-600 text-negative bg-red-50 px-2 py-0.5 rounded-full">{pct}%</span>;
 }

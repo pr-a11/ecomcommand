@@ -1,9 +1,8 @@
 'use client';
 import React from 'react';
-import { motion } from 'framer-motion';
-import TrendPill from './TrendPill';
 import SparklineChart from './SparklineChart';
 import { formatINR } from './FormatINR';
+import { Info, ChevronRight } from 'lucide-react';
 
 interface KpiCardProps {
   label?: string;
@@ -33,6 +32,7 @@ export default function KpiCard({
   index = 0,
 }: KpiCardProps) {
   const isPositive = (change ?? 0) >= 0;
+  const isNeutral = change === 0 || change == null;
 
   const formatValue = (v?: number) => {
     if (v == null) return '—';
@@ -42,46 +42,60 @@ export default function KpiCard({
     return v.toLocaleString('en-IN');
   };
 
+  const changeAbs = Math.abs(change ?? 0);
+  const changeStr = `${isPositive ? '↑' : '↓'} ${changeAbs.toFixed(1)}%`;
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.06, ease: 'easeOut' }}
-      className={`kpi-card flex flex-col gap-2 ${alert ? 'border-warning/40 bg-amber-50/40' : ''}`}
+    <div
+      className="bs-kpi-card group"
+      style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* Label row */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-600 uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        {badge && (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-            {badge}
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1 min-w-0">
+          <span className="bs-kpi-label truncate">{label}</span>
+          <Info size={9} className="text-gray-300 flex-shrink-0" />
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {badge && (
+            <span className="text-xs font-medium text-gray-400 flex items-center gap-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+              {badge}
+            </span>
+          )}
+          <ChevronRight size={11} className="text-gray-200 group-hover:text-gray-400 transition-colors" />
+        </div>
+      </div>
+
+      {/* Value + trend pill */}
+      <div className="flex items-end justify-between gap-1 mb-0.5">
+        <span className="bs-kpi-value">{formatValue(value)}</span>
+        {!isNeutral && (
+          <span
+            className={`bs-trend-pill flex-shrink-0 ${
+              alert
+                ? isPositive ? 'bs-trend-positive' : 'bs-trend-negative' : isPositive ?'bs-trend-positive' : 'bs-trend-negative'
+            }`}
+          >
+            {changeStr}
           </span>
+        )}
+        {isNeutral && change === 0 && (
+          <span className="bs-trend-pill bs-trend-neutral flex-shrink-0">→ 0.0%</span>
         )}
       </div>
 
-      {/* Value */}
-      <div className="flex items-end gap-2">
-        <span className="text-2xl font-800 text-foreground tabular-nums leading-none">
-          {formatValue(value)}
-        </span>
-      </div>
+      {/* Caption */}
+      {caption && (
+        <p className={`text-xs mt-0.5 truncate leading-tight ${alert ? 'text-amber-600 font-medium' : 'text-gray-400'}`}>
+          {caption}
+        </p>
+      )}
 
-      {/* Trend + caption */}
-      <div className="flex items-center gap-2">
-        <TrendPill value={change ?? 0} />
-        {caption && (
-          <span className={`text-xs ${alert ? 'text-warning font-semibold' : 'text-muted-foreground'}`}>
-            {caption}
-          </span>
-        )}
+      {/* Sparkline at bottom — Brandstack style */}
+      <div className="mt-2 -mx-1">
+        <SparklineChart data={sparkline} positive={isPositive} height={30} />
       </div>
-
-      {/* Sparkline */}
-      <div className="mt-auto pt-1 -mx-1">
-        <SparklineChart data={sparkline} positive={isPositive} height={32} />
-      </div>
-    </motion.div>
+    </div>
   );
 }
