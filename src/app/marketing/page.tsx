@@ -9,6 +9,7 @@ import AgeGenderChart from './components/AgeGenderChart';
 import AbandonedCartsCard from './components/AbandonedCartsCard';
 import LiveActiveUsersCard from './components/LiveActiveUsersCard';
 import ActiveUsersByCountry from './components/ActiveUsersByCountry';
+import MarketingTrendChart from './components/MarketingTrendChart';
 
 export default function MarketingPage() {
   return (
@@ -30,16 +31,6 @@ export default function MarketingPage() {
         {/* KPI Grid */}
         <MarketingKpiGrid />
 
-        {/* Campaign Table + Insights side by side */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-          <div className="xl:col-span-2">
-            <CampaignPerformanceTable />
-          </div>
-          <div className="xl:col-span-1">
-            <MarketingInsightsPanel />
-          </div>
-        </div>
-
         {/* Funnel + Abandoned Carts + Live Users */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="md:col-span-1">
@@ -53,8 +44,25 @@ export default function MarketingPage() {
           </div>
         </div>
 
-        {/* Active Users by Country (world map) */}
-        <ActiveUsersByCountry />
+        {/* Marketing Trend + Active Users by Country side by side */}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
+          <div className="xl:col-span-3">
+            <MarketingTrendChart />
+          </div>
+          <div className="xl:col-span-2">
+            <ActiveUsersByCountry />
+          </div>
+        </div>
+
+        {/* Campaign Table + Insights side by side */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+          <div className="xl:col-span-2">
+            <CampaignPerformanceTable />
+          </div>
+          <div className="xl:col-span-1">
+            <MarketingInsightsPanel />
+          </div>
+        </div>
 
         {/* Channel Sessions + Age/Gender */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">

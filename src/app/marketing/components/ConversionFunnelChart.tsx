@@ -2,37 +2,32 @@
 import React from 'react';
 import { useMarketingData } from '@/hooks/useMarketingData';
 import { Info } from 'lucide-react';
+import * as mockMarketing from '@/data/mock/marketing';
 
-const FUNNEL_LAYERS = [
-  { fill: '#c4b5fd', label: 'Sessions', labelColor: '#5b21b6' },
-  { fill: '#a78bfa', label: 'Add to Cart', labelColor: '#4c1d95' },
-  { fill: '#f9a8d4', label: 'Checkouts', labelColor: '#9d174d' },
-  { fill: '#fcd34d', label: 'Purchases', labelColor: '#92400e' },
+const FUNNEL_COLORS = [
+  { from: '#8b5cf6', to: '#7c3aed', label: 'Sessions', textColor: '#5b21b6' },
+  { from: '#a78bfa', to: '#8b5cf6', label: 'Add to Cart', textColor: '#4c1d95' },
+  { from: '#f472b6', to: '#ec4899', label: 'Checkouts', textColor: '#9d174d' },
+  { from: '#fbbf24', to: '#f59e0b', label: 'Purchases', textColor: '#92400e' },
 ];
 
 export default function ConversionFunnelChart() {
-  const { conversionFunnelData } = useMarketingData();
+  const { conversionFunnelData: hookData } = useMarketingData();
 
-  const data = conversionFunnelData ?? [
-    { stage: 'Sessions', value: 7321, pct: 100 },
-    { stage: 'Add to Cart', value: 222, pct: 3.0 },
-    { stage: 'Checkouts', value: 89, pct: 1.2 },
-    { stage: 'Purchases', value: 38, pct: 0.5 },
-  ];
+  const data = (hookData && hookData?.length > 0) ? hookData : mockMarketing?.conversionFunnelData;
 
   const sessToCart = data?.[0]?.value ? ((data?.[1]?.value / data?.[0]?.value) * 100)?.toFixed(2) : '0';
   const cartToCheckout = data?.[1]?.value ? ((data?.[2]?.value / data?.[1]?.value) * 100)?.toFixed(2) : '0';
   const checkoutToPurchase = data?.[2]?.value ? ((data?.[3]?.value / data?.[2]?.value) * 100)?.toFixed(2) : '0';
   const overall = data?.[0]?.value ? ((data?.[3]?.value / data?.[0]?.value) * 100)?.toFixed(2) : '0';
 
-  // SVG funnel — wider top, narrower bottom, matching reference
-  const svgW = 240;
-  const svgH = 220;
+  const svgW = 220;
+  const svgH = 200;
   const n = Math.max(data?.length ?? 4, 1);
-  const gap = 3;
+  const gap = 4;
   const layerH = (svgH - gap * (n - 1)) / n;
   const topW = 200;
-  const botW = 48;
+  const botW = 52;
   const cx = svgW / 2;
 
   const layers = data?.map((stage, i) => {
@@ -41,11 +36,13 @@ export default function ConversionFunnelChart() {
     const tw = topW - (topW - botW) * t;
     const bw = topW - (topW - botW) * b;
     const y = i * (layerH + gap);
+    const pct = i === 0 ? 100 : ((stage?.value / data?.[0]?.value) * 100);
     return {
       x1t: cx - tw / 2, x2t: cx + tw / 2,
       x1b: cx - bw / 2, x2b: cx + bw / 2,
       y, midY: y + layerH / 2,
-      stage, color: FUNNEL_LAYERS?.[i],
+      stage, color: FUNNEL_COLORS?.[i],
+      pct,
     };
   });
 
@@ -57,50 +54,63 @@ export default function ConversionFunnelChart() {
       </div>
       <p className="text-xs text-gray-400 mb-4">GA4 · Sessions → Cart → Checkout → Purchases</p>
 
-      {/* Funnel SVG + Labels */}
-      <div className="flex items-center justify-center gap-3 flex-1">
+      {/* Funnel SVG */}
+      <div className="flex items-center justify-center gap-2 flex-1">
         {/* Left % labels */}
-        <div className="flex flex-col gap-0" style={{ height: svgH }}>
-          {data?.map((stage, i) => {
-            const y = i * (layerH + gap);
-            const pct = i === 0 ? '100%' : `${((stage?.value / data?.[0]?.value) * 100)?.toFixed(1)}%`;
-            return (
-              <div
-                key={stage?.stage}
-                className="flex items-center justify-end"
-                style={{ height: layerH, marginBottom: i < n - 1 ? gap : 0 }}
-              >
-                <span className="text-[11px] text-gray-400 tabular-nums font-medium">{pct}</span>
-              </div>
-            );
-          })}
+        <div className="flex flex-col" style={{ height: svgH }}>
+          {layers?.map((l, i) => (
+            <div
+              key={`pct-${i}`}
+              className="flex items-center justify-end"
+              style={{ height: layerH, marginBottom: i < n - 1 ? gap : 0 }}
+            >
+              <span className="text-[10px] text-gray-400 tabular-nums font-semibold">
+                {l?.pct?.toFixed(1)}%
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* SVG Funnel */}
         <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
           <defs>
             {layers?.map((l, i) => (
-              <linearGradient key={i} id={`fgl${i}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={l?.color?.fill} stopOpacity="1" />
-                <stop offset="100%" stopColor={l?.color?.fill} stopOpacity="0.82" />
+              <linearGradient key={`grad-${i}`} id={`fgrad${i}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={l?.color?.from} stopOpacity="1" />
+                <stop offset="100%" stopColor={l?.color?.to} stopOpacity="0.9" />
               </linearGradient>
             ))}
+            {/* Shine overlay */}
+            <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="white" stopOpacity="0.15" />
+              <stop offset="50%" stopColor="white" stopOpacity="0.05" />
+              <stop offset="100%" stopColor="white" stopOpacity="0" />
+            </linearGradient>
           </defs>
           {layers?.map((l, i) => (
-            <g key={i}>
+            <g key={`layer-${i}`}>
+              {/* Main trapezoid */}
               <polygon
                 points={`${l?.x1t},${l?.y} ${l?.x2t},${l?.y} ${l?.x2b},${l?.y + layerH} ${l?.x1b},${l?.y + layerH}`}
-                fill={`url(#fgl${i})`}
-                rx="2"
+                fill={`url(#fgrad${i})`}
+                style={{
+                  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.12))',
+                }}
+              />
+              {/* Shine overlay */}
+              <polygon
+                points={`${l?.x1t},${l?.y} ${l?.x2t},${l?.y} ${l?.x2b},${l?.y + layerH} ${l?.x1b},${l?.y + layerH}`}
+                fill="url(#shine)"
               />
               {/* Value label */}
               <text
                 x={cx}
-                y={l?.midY + 5}
+                y={l?.midY + 4}
                 textAnchor="middle"
-                fontSize="12"
+                fontSize="11"
                 fontWeight="700"
-                fill={l?.color?.labelColor}
+                fill="white"
+                style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
               >
                 {l?.stage?.value?.toLocaleString('en-IN')}
               </text>
@@ -109,15 +119,18 @@ export default function ConversionFunnelChart() {
         </svg>
 
         {/* Right stage labels */}
-        <div className="flex flex-col gap-0" style={{ height: svgH }}>
-          {FUNNEL_LAYERS?.map((c, i) => (
+        <div className="flex flex-col" style={{ height: svgH }}>
+          {FUNNEL_COLORS?.map((c, i) => (
             <div
-              key={c?.label}
+              key={`label-${c?.label}`}
               className="flex items-center gap-1.5"
               style={{ height: layerH, marginBottom: i < n - 1 ? gap : 0 }}
             >
-              <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: c?.fill }} />
-              <span className="text-[11px] font-medium text-gray-600 whitespace-nowrap">{c?.label}</span>
+              <div
+                className="w-2 h-2 rounded-sm flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${c?.from}, ${c?.to})` }}
+              />
+              <span className="text-[10px] font-semibold text-gray-600 whitespace-nowrap">{c?.label}</span>
             </div>
           ))}
         </div>
@@ -127,12 +140,12 @@ export default function ConversionFunnelChart() {
       <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-gray-100">
         {[
           { label: 'SESS → CART', value: `${sessToCart}%`, color: 'text-violet-600' },
-          { label: 'CART → CHECKOUT', value: `${cartToCheckout}%`, color: 'text-pink-600' },
-          { label: 'CHECK → PURCHASE', value: `${checkoutToPurchase}%`, color: 'text-amber-600' },
+          { label: 'CART → CHECK', value: `${cartToCheckout}%`, color: 'text-pink-600' },
+          { label: 'CHECK → BUY', value: `${checkoutToPurchase}%`, color: 'text-amber-600' },
           { label: 'OVERALL CONV', value: `${overall}%`, color: 'text-gray-700' },
         ]?.map((stat) => (
           <div key={stat?.label} className="text-center">
-            <p className="text-[10px] text-gray-400 mb-0.5">{stat?.label}</p>
+            <p className="text-[9px] text-gray-400 mb-0.5 font-semibold tracking-wide">{stat?.label}</p>
             <p className={`text-sm font-bold tabular-nums ${stat?.color}`}>{stat?.value}</p>
           </div>
         ))}

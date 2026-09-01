@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import * as mockSales from '@/data/mock/sales';
 
 export function useSalesData() {
-  const [kpiData, setKpiData] = useState<any>(null);
-  const [salesByChannelData, setSalesByChannelData] = useState<any[]>([]);
-  const [netSalesVsMarginData, setNetSalesVsMarginData] = useState<any[]>([]);
-  const [salesSummaryData, setSalesSummaryData] = useState<any[]>([]);
-  const [geographicSalesData, setGeographicSalesData] = useState<any[]>([]);
-  const [topSkusData, setTopSkusData] = useState<any[]>([]);
-  const [returnsByChannelData, setReturnsByChannelData] = useState<any[]>([]);
-  const [channelMixData, setChannelMixData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [kpiData, setKpiData] = useState<any>(mockSales.kpiData);
+  const [salesByChannelData, setSalesByChannelData] = useState<any[]>(mockSales.salesByChannelData);
+  const [netSalesVsMarginData, setNetSalesVsMarginData] = useState<any[]>(mockSales.netSalesVsMarginData);
+  const [salesSummaryData, setSalesSummaryData] = useState<any[]>(mockSales.salesSummaryData);
+  const [geographicSalesData, setGeographicSalesData] = useState<any[]>(mockSales.geographicSalesData);
+  const [topSkusData, setTopSkusData] = useState<any[]>(mockSales.topSkusData);
+  const [returnsByChannelData, setReturnsByChannelData] = useState<any[]>(mockSales.returnsByChannelData);
+  const [channelMixData, setChannelMixData] = useState<any[]>(mockSales.channelMixData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,47 +50,47 @@ export function useSalesData() {
           });
         }
 
-        if (channelRes.data) {
+        if (channelRes.data && channelRes.data.length > 0) {
           setSalesByChannelData(channelRes.data.map((r: any) => ({
             date: r.date_label, shopify: r.shopify, amazon: r.amazon,
             flipkart: r.flipkart, myntra: r.myntra, eternz: r.eternz,
           })));
         }
 
-        if (marginRes.data) {
+        if (marginRes.data && marginRes.data.length > 0) {
           setNetSalesVsMarginData(marginRes.data.map((r: any) => ({
             date: r.date_label, netSales: r.net_sales, netMargin: r.net_margin,
           })));
         }
 
-        if (summaryRes.data) {
+        if (summaryRes.data && summaryRes.data.length > 0) {
           setSalesSummaryData(summaryRes.data.map((r: any) => ({
             label: r.label, orders: r.orders, amount: r.amount,
             isPositive: r.is_positive, isSubtotal: r.is_subtotal, isTotal: r.is_total,
           })));
         }
 
-        if (geoRes.data) {
+        if (geoRes.data && geoRes.data.length > 0) {
           setGeographicSalesData(geoRes.data.map((r: any) => ({
             rank: r.rank_order, state: r.state, shopify: r.shopify,
             marketplace: r.marketplace, total: r.total,
           })));
         }
 
-        if (skuRes.data) {
+        if (skuRes.data && skuRes.data.length > 0) {
           setTopSkusData(skuRes.data.map((r: any) => ({
             rank: r.rank_order, sku: r.sku, name: r.name,
             netSales: r.net_sales, units: r.units, orders: r.orders, category: r.category,
           })));
         }
 
-        if (returnsRes.data) {
+        if (returnsRes.data && returnsRes.data.length > 0) {
           setReturnsByChannelData(returnsRes.data.map((r: any) => ({
             channel: r.channel, returned: r.returned, returnPct: r.return_pct,
           })));
         }
 
-        if (mixRes.data) {
+        if (mixRes.data && mixRes.data.length > 0) {
           setChannelMixData(mixRes.data.map((r: any) => ({
             channel: r.channel, netSales: r.net_sales, pct: r.pct, color: r.color,
           })));

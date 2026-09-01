@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import * as mockCustomers from '@/data/mock/customers';
 
 export function useCustomersData() {
-  const [customersKpis, setCustomersKpis] = useState<any>(null);
-  const [reviewsData, setReviewsData] = useState<any[]>([]);
-  const [topCustomersData, setTopCustomersData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [customersKpis, setCustomersKpis] = useState<any>(mockCustomers.customersKpis);
+  const [reviewsData, setReviewsData] = useState<any[]>(mockCustomers.reviewsData);
+  const [topCustomersData, setTopCustomersData] = useState<any[]>(mockCustomers.topCustomersData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,14 +37,14 @@ export function useCustomersData() {
           });
         }
 
-        if (reviewsRes.data) {
+        if (reviewsRes.data && reviewsRes.data.length > 0) {
           setReviewsData(reviewsRes.data.map((r: any, i: number) => ({
             id: i + 1, customer: r.customer, rating: r.rating, product: r.product,
             text: r.review_text, platform: r.platform, date: r.review_date, sentiment: r.sentiment,
           })));
         }
 
-        if (topRes.data) {
+        if (topRes.data && topRes.data.length > 0) {
           setTopCustomersData(topRes.data.map((r: any) => ({
             rank: r.rank_order, name: r.name, orders: r.orders,
             totalSpend: r.total_spend, lastOrder: r.last_order, segment: r.segment,

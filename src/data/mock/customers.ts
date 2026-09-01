@@ -58,3 +58,11 @@ export const customerJourneyData = [
   { stage: 'Retention', count: 2884, icon: '🔄' },
   { stage: 'Advocacy', count: 842, icon: '📣' },
 ];
+
+function mockCustomers(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockCustomers is not implemented yet.', args);
+  return null;
+}
+
+export default mockCustomers;

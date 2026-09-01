@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import * as mockMarketing from '@/data/mock/marketing';
 
 export function useMarketingData() {
-  const [marketingKpiData, setMarketingKpiData] = useState<any>(null);
-  const [campaignData, setCampaignData] = useState<any[]>([]);
-  const [conversionFunnelData, setConversionFunnelData] = useState<any[]>([]);
-  const [channelSessionsData, setChannelSessionsData] = useState<any[]>([]);
-  const [ageGenderData, setAgeGenderData] = useState<any[]>([]);
-  const [marketingInsights, setMarketingInsights] = useState<any[]>([]);
-  const [netSalesOverTimeMarketing, setNetSalesOverTimeMarketing] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [marketingKpiData, setMarketingKpiData] = useState<any>(mockMarketing.marketingKpiData);
+  const [campaignData, setCampaignData] = useState<any[]>(mockMarketing.campaignData);
+  const [conversionFunnelData, setConversionFunnelData] = useState<any[]>(mockMarketing.conversionFunnelData);
+  const [channelSessionsData, setChannelSessionsData] = useState<any[]>(mockMarketing.channelSessionsData);
+  const [ageGenderData, setAgeGenderData] = useState<any[]>(mockMarketing.ageGenderData);
+  const [marketingInsights, setMarketingInsights] = useState<any[]>(mockMarketing.marketingInsights);
+  const [netSalesOverTimeMarketing, setNetSalesOverTimeMarketing] = useState<any[]>(mockMarketing.netSalesOverTimeMarketing);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,50 +44,52 @@ export function useMarketingData() {
             cac: { value: k.cac, change: 0, label: 'CAC', caption: 'per new customer · high CAC', alert: true },
           });
         }
+        // else keep mock data
 
-        if (campRes.data) {
+        if (campRes.data && campRes.data.length > 0) {
           setCampaignData(campRes.data.map((r: any) => ({
             id: r.id, platform: r.platform, name: r.name, spend: r.spend,
             attributedSales: r.attributed_sales, orders: r.orders, roas: r.roas,
             status: r.status as 'Scale' | 'Hold' | 'Cut',
           })));
         }
+        // else keep mock data
 
-        if (funnelRes.data) {
+        if (funnelRes.data && funnelRes.data.length > 0) {
           setConversionFunnelData(funnelRes.data.map((r: any) => ({
             stage: r.stage, value: r.value, pct: r.pct,
           })));
         }
+        // else keep mock data
 
-        if (sessionsRes.data) {
+        if (sessionsRes.data && sessionsRes.data.length > 0) {
           setChannelSessionsData(sessionsRes.data.map((r: any) => ({
             id: r.id, channel: r.channel, sessions: r.sessions,
             orders: r.orders, sales: r.sales, convRate: r.conv_rate,
           })));
         }
+        // else keep mock data
 
-        if (ageRes.data) {
+        if (ageRes.data && ageRes.data.length > 0) {
           setAgeGenderData(ageRes.data.map((r: any) => ({
             age: r.age_group, spend: r.spend, sales: r.sales,
             visitors: r.visitors, male: r.male, female: r.female,
           })));
         }
+        // else keep mock data
 
-        if (netSalesRes.data) {
+        if (netSalesRes.data && netSalesRes.data.length > 0) {
           setNetSalesOverTimeMarketing(netSalesRes.data.map((r: any) => ({
             date: r.date_label, current: r.current_period, previous: r.previous_period,
           })));
         }
+        // else keep mock data
 
-        // Static insights (can be made dynamic later)
-        setMarketingInsights([
-          { id: 'insight-best', type: 'best' as const, label: 'BEST PERFORMER', text: 'Always-On Prospecting generated 5.98x ROAS on ₹18,200 spend — your top campaign this period.' },
-          { id: 'insight-attention', type: 'attention' as const, label: 'NEEDS ATTENTION', text: 'Performance Max — Core returned 1.28x on ₹5,299 — well below your 2.8x average. Consider pausing.' },
-          { id: 'insight-trend', type: 'trend' as const, label: 'TREND', text: 'Ad spend down 37.9% while attributed sales down only 6% vs the previous period — efficiency improving.' },
-          { id: 'insight-opportunity', type: 'opportunity' as const, label: 'OPPORTUNITY', text: 'Wedding retargeting is beating your 3x average — allocate ₹10,000 more before the peak season.' },
-        ]);
+        // Static insights
+        setMarketingInsights(mockMarketing.marketingInsights);
       } catch (err: any) {
         setError(err?.message || 'Failed to load marketing data');
+        // Keep mock data on error
       } finally {
         setIsLoading(false);
       }

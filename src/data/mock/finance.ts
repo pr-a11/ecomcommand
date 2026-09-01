@@ -78,3 +78,10 @@ export const marketplaceFeeData = [
   { id: 'mf-myntra', marketplace: 'Myntra', referralFee: 18.0, closingFee: 4.8, shippingFee: 5.0, totalFee: 27.8, impact: 33000 },
   { id: 'mf-eternz', marketplace: 'Eternz', referralFee: 12.0, closingFee: 4.0, shippingFee: 4.0, totalFee: 20.0, impact: 8800 },
 ];
+function mockFinance(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockFinance is not implemented yet.', args);
+  return null;
+}
+
+export default mockFinance;

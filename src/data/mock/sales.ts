@@ -120,3 +120,10 @@ export const channelMixData = [
   { channel: 'Myntra', netSales: 62100, pct: 10.6, color: 'var(--channel-myntra)' },
   { channel: 'Eternz', netSales: 25421, pct: 4.3, color: 'var(--channel-eternz)' },
 ];
+function mockSales(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockSales is not implemented yet.', args);
+  return null;
+}
+
+export default mockSales;
