@@ -28,7 +28,7 @@ export default function ConversionFunnelChart() {
   // SVG funnel — wider top, narrower bottom, matching reference
   const svgW = 240;
   const svgH = 220;
-  const n = data?.length ?? 4;
+  const n = Math.max(data?.length ?? 4, 1);
   const gap = 3;
   const layerH = (svgH - gap * (n - 1)) / n;
   const topW = 200;
