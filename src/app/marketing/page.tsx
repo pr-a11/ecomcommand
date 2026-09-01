@@ -14,15 +14,12 @@ import MarketingTrendChart from './components/MarketingTrendChart';
 export default function MarketingPage() {
   return (
     <AppLayout currentPath="/marketing">
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Page header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-700 text-foreground">Marketing</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Aug 1 – Aug 29, 2026 · Meta + Google · GA4</p>
-          </div>
+          <h1 className="text-xl font-bold text-gray-900 tracking-tight">Marketing</h1>
           <div className="flex items-center gap-2">
-            <button className="text-xs px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted transition-colors font-500 text-foreground">
+            <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors font-medium text-gray-600">
               All Channels ▾
             </button>
           </div>
@@ -31,31 +28,8 @@ export default function MarketingPage() {
         {/* KPI Grid */}
         <MarketingKpiGrid />
 
-        {/* Funnel + Abandoned Carts + Live Users */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div className="md:col-span-1">
-            <ConversionFunnelChart />
-          </div>
-          <div className="md:col-span-1">
-            <AbandonedCartsCard />
-          </div>
-          <div className="md:col-span-1">
-            <LiveActiveUsersCard />
-          </div>
-        </div>
-
-        {/* Marketing Trend + Active Users by Country side by side */}
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
-          <div className="xl:col-span-3">
-            <MarketingTrendChart />
-          </div>
-          <div className="xl:col-span-2">
-            <ActiveUsersByCountry />
-          </div>
-        </div>
-
-        {/* Campaign Table + Insights side by side */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        {/* Campaign Performance + Marketing Insights — Brandstack primary layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           <div className="xl:col-span-2">
             <CampaignPerformanceTable />
           </div>
@@ -64,8 +38,25 @@ export default function MarketingPage() {
           </div>
         </div>
 
+        {/* Marketing Trend + Active Users by Country */}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+          <div className="xl:col-span-3">
+            <MarketingTrendChart />
+          </div>
+          <div className="xl:col-span-2">
+            <ActiveUsersByCountry />
+          </div>
+        </div>
+
+        {/* Funnel + Abandoned Carts + Live Users */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ConversionFunnelChart />
+          <AbandonedCartsCard />
+          <LiveActiveUsersCard />
+        </div>
+
         {/* Channel Sessions + Age/Gender */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           <ChannelSessionsTable />
           <AgeGenderChart />
         </div>
