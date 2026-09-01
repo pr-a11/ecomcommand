@@ -1,13 +1,13 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import '../styles/tailwind.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DateRangeProvider } from '@/contexts/DateRangeContext';
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
   variable: '--font-sans',
   display: 'swap',
 });
@@ -29,8 +29,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={plusJakartaSans.variable}>
-      <body className={plusJakartaSans.className}>
+    <html lang="en" className={inter.variable}>
+      <body className={inter.className}>
         <AuthProvider>
           <DateRangeProvider>
             {children}
