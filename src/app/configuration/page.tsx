@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Settings, Eye, EyeOff, CheckCircle, XCircle, Loader2, Save, AlertCircle, Zap, ShoppingBag, Truck, Camera, Database, Wifi, WifiOff, Clock, RefreshCw } from 'lucide-react';
+import { Settings, Eye, EyeOff, CheckCircle, XCircle, Loader2, Save, AlertCircle, Zap, ShoppingBag, Truck, Camera, Database, Wifi, WifiOff, Clock, RefreshCw, Activity, RotateCcw } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,6 +11,7 @@ type Provider = 'meta_ads' | 'shopify' | 'courier' | 'instagram';
 type CredentialStatus = 'active' | 'inactive' | 'error';
 type TestResult = 'pass' | 'fail' | null;
 type SyncInterval = 'manual' | 'hourly' | 'daily' | 'weekly';
+type FreshnessStatus = 'fresh' | 'stale' | 'never';
 
 interface CredentialField {
   key: string;
@@ -40,6 +41,14 @@ interface CredentialRow {
   last_synced_at: string | null;
   error_message: string | null;
   sync_interval?: SyncInterval;
+}
+
+interface SyncHealthData {
+  lastSyncedAt: string | null;
+  lastTestedAt: string | null;
+  status: CredentialStatus | 'unconfigured';
+  errorMessage: string | null;
+  freshness: FreshnessStatus;
 }
 
 interface FieldState {
@@ -148,6 +157,25 @@ function formatDate(iso: string | null): string {
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function getFreshness(lastSyncedAt: string | null): FreshnessStatus {
+  if (!lastSyncedAt) return 'never';
+  const diffMs = Date.now() - new Date(lastSyncedAt).getTime();
+  const twoHoursMs = 2 * 60 * 60 * 1000;
+  return diffMs <= twoHoursMs ? 'fresh' : 'stale';
+}
+
+function getRelativeTime(iso: string | null): string {
+  if (!iso) return 'Never';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface StatusBadgeProps {
@@ -188,6 +216,124 @@ function TestResultBadge({ result }: TestResultBadgeProps) {
     <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-600">
       <WifiOff size={11} /> Connection Failed
     </span>
+  );
+}
+
+interface SyncHealthPanelProps {
+  provider: Provider;
+  health: SyncHealthData;
+  isSyncing: boolean;
+  onRetry: () => void;
+}
+
+function SyncHealthPanel({ provider, health, isSyncing, onRetry }: SyncHealthPanelProps) {
+  const { lastSyncedAt, lastTestedAt, status, errorMessage, freshness } = health;
+
+  const freshnessConfig: Record<FreshnessStatus, { label: string; cls: string; dot: string }> = {
+    fresh: { label: 'Fresh', cls: 'bg-gray-900 text-white', dot: 'bg-white' },
+    stale: { label: 'Stale', cls: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
+    never: { label: 'No sync yet', cls: 'bg-gray-100 text-gray-500', dot: 'bg-gray-400' },
+  };
+
+  const syncStatusConfig: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
+    active: { label: 'Sync OK', cls: 'bg-gray-900 text-white', icon: <CheckCircle size={11} /> },
+    error: { label: 'Sync Failed', cls: 'bg-red-100 text-red-600', icon: <XCircle size={11} /> },
+    inactive: { label: 'Not Synced', cls: 'bg-gray-100 text-gray-500', icon: <Clock size={11} /> },
+    unconfigured: { label: 'Not Configured', cls: 'bg-gray-100 text-gray-400', icon: <Clock size={11} /> },
+  };
+
+  const fc = freshnessConfig[freshness];
+  const sc = syncStatusConfig[status] ?? syncStatusConfig.unconfigured;
+
+  return (
+    <div className="mt-4 pt-4 border-t border-gray-100">
+      <div className="flex items-center gap-2 mb-3">
+        <Activity size={13} className="text-gray-500" />
+        <span className="text-xs font-semibold text-gray-700">Sync Health</span>
+      </div>
+
+      <div className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 space-y-3">
+        {/* Row 1: Badges */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Sync status badge */}
+          <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
+            {sc.icon}
+            {sc.label}
+          </span>
+
+          {/* Freshness badge */}
+          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${fc.cls}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${fc.dot}`} />
+            {fc.label}
+          </span>
+        </div>
+
+        {/* Row 2: Timestamps */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <p className="text-xs text-gray-400 mb-0.5">Last Sync</p>
+            <p className="text-xs font-medium text-gray-700">
+              {lastSyncedAt ? (
+                <span title={formatDate(lastSyncedAt)}>{getRelativeTime(lastSyncedAt)}</span>
+              ) : (
+                <span className="text-gray-400">Never</span>
+              )}
+            </p>
+            {lastSyncedAt && (
+              <p className="text-xs text-gray-400 mt-0.5">{formatDate(lastSyncedAt)}</p>
+            )}
+          </div>
+          <div>
+            <p className="text-xs text-gray-400 mb-0.5">Last Tested</p>
+            <p className="text-xs font-medium text-gray-700">
+              {lastTestedAt ? (
+                <span title={formatDate(lastTestedAt)}>{getRelativeTime(lastTestedAt)}</span>
+              ) : (
+                <span className="text-gray-400">Never</span>
+              )}
+            </p>
+            {lastTestedAt && (
+              <p className="text-xs text-gray-400 mt-0.5">{formatDate(lastTestedAt)}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Row 3: Error details */}
+        {status === 'error' && errorMessage && (
+          <div className="flex items-start gap-2 bg-red-50 border border-red-100 rounded-md px-3 py-2">
+            <XCircle size={13} className="text-red-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-semibold text-red-700 mb-0.5">Error Details</p>
+              <p className="text-xs text-red-600 break-words">{errorMessage}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Row 4: Retry button */}
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-xs text-gray-400">
+            {freshness === 'fresh' && lastSyncedAt
+              ? `Data is up to date`
+              : freshness === 'stale'
+              ? `Data may be outdated — consider re-syncing`
+              : `No data synced yet`}
+          </p>
+          <button
+            onClick={onRetry}
+            disabled={isSyncing || status === 'unconfigured' || status === 'inactive'}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-900 hover:text-white hover:border-gray-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            title={status !== 'active' ? 'Test connection first to enable retry' : 'Retry sync now'}
+          >
+            {isSyncing ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <RotateCcw size={12} />
+            )}
+            {isSyncing ? 'Retrying…' : 'Retry Sync'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -249,6 +395,14 @@ export default function ConfigurationPage() {
 
   const [loading, setLoading] = useState(true);
 
+  // ── Sync Health state ──────────────────────────────────────────────────────
+  const [syncHealth, setSyncHealth] = useState<Record<Provider, SyncHealthData>>({
+    meta_ads: { lastSyncedAt: null, lastTestedAt: null, status: 'unconfigured', errorMessage: null, freshness: 'never' },
+    shopify: { lastSyncedAt: null, lastTestedAt: null, status: 'unconfigured', errorMessage: null, freshness: 'never' },
+    courier: { lastSyncedAt: null, lastTestedAt: null, status: 'unconfigured', errorMessage: null, freshness: 'never' },
+    instagram: { lastSyncedAt: null, lastTestedAt: null, status: 'unconfigured', errorMessage: null, freshness: 'never' },
+  });
+
   // ── Sync interval state ────────────────────────────────────────────────────
   const [syncIntervals, setSyncIntervals] = useState<Record<Provider, SyncInterval>>({
     meta_ads: 'manual',
@@ -287,6 +441,7 @@ export default function ConfigurationPage() {
       const newLastTested: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
       const newLastSynced: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
       const newSyncIntervals: Record<Provider, SyncInterval> = { meta_ads: 'manual', shopify: 'manual', courier: 'manual', instagram: 'manual' };
+      const newErrorMessages: Record<Provider, string | null> = { meta_ads: null, shopify: null, courier: null, instagram: null };
 
       rows.forEach((row) => {
         if (grouped[row.provider]) {
@@ -295,6 +450,7 @@ export default function ConfigurationPage() {
           if (row.last_tested_at) newLastTested[row.provider] = row.last_tested_at;
           if (row.last_synced_at) newLastSynced[row.provider] = row.last_synced_at;
           if (row.sync_interval) newSyncIntervals[row.provider] = row.sync_interval as SyncInterval;
+          if (row.error_message) newErrorMessages[row.provider] = row.error_message;
         }
       });
 
@@ -314,6 +470,19 @@ export default function ConfigurationPage() {
       setLastTested(newLastTested);
       setLastSynced(newLastSynced);
       setSyncIntervals(newSyncIntervals);
+
+      // Build sync health from loaded data
+      const newHealth: Record<Provider, SyncHealthData> = {} as Record<Provider, SyncHealthData>;
+      (['meta_ads', 'shopify', 'courier', 'instagram'] as Provider[]).forEach((p) => {
+        newHealth[p] = {
+          lastSyncedAt: newLastSynced[p],
+          lastTestedAt: newLastTested[p],
+          status: newStatuses[p],
+          errorMessage: newErrorMessages[p],
+          freshness: getFreshness(newLastSynced[p]),
+        };
+      });
+      setSyncHealth(newHealth);
     } catch (err: any) {
       console.error('Failed to load credentials:', err);
     } finally {
@@ -324,6 +493,58 @@ export default function ConfigurationPage() {
   useEffect(() => {
     loadCredentials();
   }, [loadCredentials]);
+
+  // ── Real-time subscription for sync health ─────────────────────────────────
+  useEffect(() => {
+    let userId: string | null = null;
+
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      userId = user.id;
+
+      const channel = supabase
+        .channel('api_credentials_health')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'api_credentials',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const row = payload.new as CredentialRow;
+            if (!row?.provider) return;
+            const provider = row.provider as Provider;
+            setSyncHealth((prev) => ({
+              ...prev,
+              [provider]: {
+                lastSyncedAt: row.last_synced_at,
+                lastTestedAt: row.last_tested_at,
+                status: row.status ?? 'unconfigured',
+                errorMessage: row.error_message,
+                freshness: getFreshness(row.last_synced_at),
+              },
+            }));
+            // Also keep legacy state in sync
+            if (row.last_synced_at) setLastSynced((prev) => ({ ...prev, [provider]: row.last_synced_at }));
+            if (row.last_tested_at) setLastTested((prev) => ({ ...prev, [provider]: row.last_tested_at }));
+            setStatuses((prev) => ({ ...prev, [provider]: row.status ?? 'unconfigured' }));
+          }
+        )
+        .subscribe();
+
+      return channel;
+    };
+
+    let channelRef: ReturnType<typeof supabase.channel> | null = null;
+    setupSubscription().then((ch) => { if (ch) channelRef = ch; });
+
+    return () => {
+      if (channelRef) supabase.removeChannel(channelRef);
+    };
+  }, [supabase]);
 
   // ── Auto-refresh via interval ──────────────────────────────────────────────
 
@@ -523,6 +744,10 @@ export default function ConfigurationPage() {
         setStatuses((prev) => ({ ...prev, [provider]: 'active' }));
         setTestResults((prev) => ({ ...prev, [provider]: 'pass' }));
         setLastTested((prev) => ({ ...prev, [provider]: now }));
+        setSyncHealth((prev) => ({
+          ...prev,
+          [provider]: { ...prev[provider], status: 'active', lastTestedAt: now, errorMessage: null },
+        }));
       } else {
         throw new Error(testError || 'Connection test failed.');
       }
@@ -539,6 +764,10 @@ export default function ConfigurationPage() {
       setTestResults((prev) => ({ ...prev, [provider]: 'fail' }));
       setLastTested((prev) => ({ ...prev, [provider]: now }));
       setErrors((prev) => ({ ...prev, [provider]: err.message ?? 'Connection test failed.' }));
+      setSyncHealth((prev) => ({
+        ...prev,
+        [provider]: { ...prev[provider], status: 'error', lastTestedAt: now, errorMessage: err.message },
+      }));
     } finally {
       setTesting((prev) => ({ ...prev, [provider]: false }));
       // Auto-clear test result badge after 8s
@@ -744,11 +973,21 @@ export default function ConfigurationPage() {
       // Update last_synced_at in DB
       await supabase
         .from('api_credentials')
-        .update({ last_synced_at: now })
+        .update({ last_synced_at: now, status: 'active', error_message: null })
         .eq('user_id', user.id)
         .eq('provider', provider);
 
       setLastSynced((prev) => ({ ...prev, [provider]: now }));
+      setSyncHealth((prev) => ({
+        ...prev,
+        [provider]: {
+          ...prev[provider],
+          lastSyncedAt: now,
+          status: 'active',
+          errorMessage: null,
+          freshness: 'fresh',
+        },
+      }));
       setSyncMessages((prev) => ({
         ...prev,
         [provider]: `✓ Sync complete — ${rowsUpserted} records upserted into ${tables.join(', ')}.`,
@@ -756,6 +995,24 @@ export default function ConfigurationPage() {
       setTimeout(() => setSyncMessages((prev) => ({ ...prev, [provider]: null })), 8000);
 
     } catch (err: any) {
+      const now = new Date().toISOString();
+      const uid = (await supabase.auth.getUser()).data.user?.id ?? '';
+      await supabase
+        .from('api_credentials')
+        .update({ status: 'error', error_message: err.message, last_synced_at: now })
+        .eq('user_id', uid)
+        .eq('provider', provider);
+
+      setSyncHealth((prev) => ({
+        ...prev,
+        [provider]: {
+          ...prev[provider],
+          status: 'error',
+          errorMessage: err.message,
+          lastSyncedAt: now,
+          freshness: getFreshness(now),
+        },
+      }));
       setErrors((prev) => ({ ...prev, [provider]: `Sync failed: ${err.message}` }));
     } finally {
       setSyncing((prev) => ({ ...prev, [provider]: false }));
@@ -811,6 +1068,7 @@ export default function ConfigurationPage() {
           const currentInterval = syncIntervals[provider];
           const isSavingInterval = savingInterval[provider];
           const activeIntervalLabel = SYNC_INTERVAL_OPTIONS.find((o) => o.value === currentInterval)?.label ?? 'Manual only';
+          const health = syncHealth[provider];
 
           return (
             <div
@@ -917,6 +1175,16 @@ export default function ConfigurationPage() {
                       </p>
                     )}
                   </div>
+                )}
+
+                {/* Sync Health Panel */}
+                {hasAnySavedField && (
+                  <SyncHealthPanel
+                    provider={provider}
+                    health={health}
+                    isSyncing={isSyncing}
+                    onRetry={() => handleSync(provider)}
+                  />
                 )}
 
                 {/* Error / Success / Sync Banner */}
