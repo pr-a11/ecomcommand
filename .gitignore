@@ -42,3 +42,6 @@ jest-test-results.json
 
 # Optional: if using TurboRepo or monorepo
 turbo/
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/

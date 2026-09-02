@@ -217,11 +217,16 @@ const INTEGRATIONS: IntegrationConfig[] = [
 
 // ─── Sync table mapping ───────────────────────────────────────────────────────
 
+// Tables each provider's sync actually writes. Keep this in step with the
+// upserts in handleSync — it is shown to the user as "Sync targets" and is
+// interpolated into the success message, so a stale entry is a lie.
+// `marketing_kpis`, `operations_kpis` and `instagram_kpis` are NOT listed:
+// nothing in handleSync writes them (they are still dashboard-seeded).
 const SYNC_TABLE_MAP: Record<Provider, string[]> = {
-  meta_ads: ['marketing_campaigns', 'marketing_kpis'],
-  shopify: ['orders', 'customers', 'products'],
-  courier: ['shipments', 'operations_kpis'],
-  instagram: ['instagram_posts', 'instagram_kpis'],
+  meta_ads: ['marketing_campaigns'],
+  shopify: ['orders', 'customers'],
+  courier: ['shipments'],
+  instagram: ['instagram_posts'],
 };
 
 // ─── Sync interval options ────────────────────────────────────────────────────
@@ -1067,8 +1072,8 @@ export default function ConfigurationPage() {
           const { error: upsertErr } = await supabase
             .from('marketing_campaigns')
             .upsert(campaigns, { onConflict: 'user_id,campaign_id' });
-          if (upsertErr) console.warn('marketing_campaigns upsert:', upsertErr.message);
-          else rowsUpserted += campaigns.length;
+          if (upsertErr) throw new Error(`marketing_campaigns upsert failed: ${upsertErr.message}`);
+          rowsUpserted += campaigns.length;
         }
       } else if (provider === 'instagram') {
         const token = credMap['access_token'];
@@ -1107,8 +1112,8 @@ export default function ConfigurationPage() {
           const { error: upsertErr } = await supabase
             .from('instagram_posts')
             .upsert(posts, { onConflict: 'user_id,post_id' });
-          if (upsertErr) console.warn('instagram_posts upsert:', upsertErr.message);
-          else rowsUpserted += posts.length;
+          if (upsertErr) throw new Error(`instagram_posts upsert failed: ${upsertErr.message}`);
+          rowsUpserted += posts.length;
         }
       } else if (provider === 'shopify') {
         const domain = credMap['store_domain'];
@@ -1140,8 +1145,8 @@ export default function ConfigurationPage() {
           const { error: upsertErr } = await supabase
             .from('orders')
             .upsert(orders, { onConflict: 'user_id,order_id' });
-          if (upsertErr) console.warn('orders upsert:', upsertErr.message);
-          else rowsUpserted += orders.length;
+          if (upsertErr) throw new Error(`orders upsert failed: ${upsertErr.message}`);
+          rowsUpserted += orders.length;
         }
 
         // Fetch customers
@@ -1166,8 +1171,8 @@ export default function ConfigurationPage() {
             const { error: upsertErr } = await supabase
               .from('customers')
               .upsert(customers, { onConflict: 'user_id,customer_id' });
-            if (upsertErr) console.warn('customers upsert:', upsertErr.message);
-            else rowsUpserted += customers.length;
+            if (upsertErr) throw new Error(`customers upsert failed: ${upsertErr.message}`);
+            rowsUpserted += customers.length;
           }
         }
       } else if (provider === 'courier') {
@@ -1199,8 +1204,8 @@ export default function ConfigurationPage() {
           const { error: upsertErr } = await supabase
             .from('shipments')
             .upsert(shipments, { onConflict: 'user_id,shipment_id' });
-          if (upsertErr) console.warn('shipments upsert:', upsertErr.message);
-          else rowsUpserted += shipments.length;
+          if (upsertErr) throw new Error(`shipments upsert failed: ${upsertErr.message}`);
+          rowsUpserted += shipments.length;
         }
       }
 
@@ -1224,7 +1229,10 @@ export default function ConfigurationPage() {
       }));
       setSyncMessages((prev) => ({
         ...prev,
-        [provider]: `✓ Sync complete — ${rowsUpserted} records upserted into ${tables.join(', ')}.`,
+        [provider]:
+          rowsUpserted > 0
+            ? `✓ Sync complete — ${rowsUpserted} records upserted into ${tables.join(', ')}.`
+            : `✓ Sync complete — the provider returned no records, so nothing was written to ${tables.join(', ')}.`,
       }));
       setTimeout(() => setSyncMessages((prev) => ({ ...prev, [provider]: null })), 8000);
     } catch (err: any) {
