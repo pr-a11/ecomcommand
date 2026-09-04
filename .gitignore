@@ -42,6 +42,15 @@ jest-test-results.json
 
 # Optional: if using TurboRepo or monorepo
 turbo/
+
 # Supabase CLI local state
 supabase/.temp/
 supabase/.branches/
+
+# Vercel CLI local link + pulled env (added by `vercel link`)
+.vercel
+.env*
+
+# Re-allow the committed template. This negation MUST stay last: the `.env*`
+# rule above would otherwise swallow it.
+!.env.example
