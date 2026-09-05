@@ -1,6 +1,12 @@
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserClient, type CookieOptions } from '@supabase/ssr';
 
 const PFX = 'sb_';
+type CookieToSet = {
+  name: string;
+  value: string;
+  options: CookieOptions;
+};
+
 
 const canUseCookies = (() => {
   let cache: boolean | null = null;
@@ -94,7 +100,7 @@ export function createClient() {
     {
       cookies: {
         getAll: () => (canUseCookies() ? fromCookies() : fromStorage()),
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieToSet[]) {
           if (typeof document === 'undefined') return;
           if (canUseCookies()) {
             cookiesToSet.forEach(({ name, value, options }) =>

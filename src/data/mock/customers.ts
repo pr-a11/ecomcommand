@@ -11,7 +11,7 @@ export const customersKpis = {
 
 export const customerSegmentsData = [
   { name: 'New', value: 42, color: '#3B82F6' },
-  { name: 'Returning', value: 34, color: '#10B981' },
+  { name: 'Returning', value: 34, color: '#374151' },
   { name: 'VIP', value: 14, color: '#8B5CF6' },
   { name: 'At-Risk', value: 10, color: '#EF4444' },
 ];
@@ -35,7 +35,7 @@ export const reviewsData = [
 ];
 
 export const sentimentData = [
-  { sentiment: 'Positive', count: 78, color: '#10B981' },
+  { sentiment: 'Positive', count: 78, color: '#111827' },
   { sentiment: 'Neutral', count: 14, color: '#F59E0B' },
   { sentiment: 'Negative', count: 8, color: '#EF4444' },
 ];
@@ -58,3 +58,11 @@ export const customerJourneyData = [
   { stage: 'Retention', count: 2884, icon: '🔄' },
   { stage: 'Advocacy', count: 842, icon: '📣' },
 ];
+
+function mockCustomers(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockCustomers is not implemented yet.', args);
+  return null;
+}
+
+export default mockCustomers;

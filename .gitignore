@@ -1,13 +1,20 @@
 # Node modules
 node_modules/
-package-lock.json
 
 # Next.js build output
 .next/
+.next-*/
 out/
 
 # Production build
 build/
+
+# Environment variables — real secrets must never be committed.
+# .env holds live Supabase / AI provider keys.
+.env
+.env.local
+.env*.local
+vercel.env
 
 # Logs
 npm-debug.log*
@@ -35,3 +42,14 @@ jest-test-results.json
 
 # Optional: if using TurboRepo or monorepo
 turbo/
+
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
+# Vercel CLI local link
+.vercel
+
+# Re-allow the committed template. This negation MUST stay last, otherwise the
+# .env rules above swallow it.
+!.env.example

@@ -52,3 +52,11 @@ export const deliveryByStateData = [
   { state: 'West Bengal', deliveries: 112, onTime: 88.4 },
   { state: 'Telangana', deliveries: 98, onTime: 92.8 },
 ];
+
+function mockOps(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockOps is not implemented yet.', args);
+  return null;
+}
+
+export default mockOps;

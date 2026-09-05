@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import * as mockInstagram from '@/data/mock/instagram';
 
 export function useInstagramData() {
-  const [instagramKpis, setInstagramKpis] = useState<any>(null);
-  const [postPerformanceData, setPostPerformanceData] = useState<any[]>([]);
-  const [topHashtagsData, setTopHashtagsData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [instagramKpis, setInstagramKpis] = useState<any>(mockInstagram.instagramKpis);
+  const [postPerformanceData, setPostPerformanceData] = useState<any[]>(mockInstagram.postPerformanceData);
+  const [topHashtagsData, setTopHashtagsData] = useState<any[]>(mockInstagram.topHashtagsData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function useInstagramData() {
           });
         }
 
-        if (postsRes.data) {
+        if (postsRes.data && postsRes.data.length > 0) {
           setPostPerformanceData(postsRes.data.map((r: any, i: number) => ({
             id: i + 1, type: r.post_type, gradient: r.gradient, caption: r.caption,
             likes: r.likes, comments: r.comments, shares: r.shares,
@@ -44,7 +45,7 @@ export function useInstagramData() {
           })));
         }
 
-        if (hashtagsRes.data) {
+        if (hashtagsRes.data && hashtagsRes.data.length > 0) {
           setTopHashtagsData(hashtagsRes.data.map((r: any) => ({
             tag: r.tag, posts: r.posts, avgReach: r.avg_reach, avgEng: r.avg_eng,
           })));
@@ -59,7 +60,7 @@ export function useInstagramData() {
     fetchAll();
 
     const channel = supabase
-      .channel('instagram_realtime')
+      .channel(`instagram_realtime_${Math.random()}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'instagram_kpis' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'instagram_posts' }, fetchAll)
       .subscribe();

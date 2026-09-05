@@ -63,3 +63,11 @@ export const inventorySyncData = [
   { product: 'Gold-plated Charm Bracelet', sku: 'BRC-GLD-025', shopify: 3, amazon: 2, flipkart: 1, myntra: 0, total: 6, status: 'Critical Low' },
   { product: 'Meenakari Stud Earrings', sku: 'ERG-MNK-031', shopify: 38, amazon: 24, flipkart: 18, myntra: 14, total: 94, status: 'In Stock' },
 ];
+
+function mockMarketplace(...args: any[]): any {
+  // eslint-disable-next-line no-console
+  console.warn('Placeholder: mockMarketplace is not implemented yet.', args);
+  return null;
+}
+
+export default mockMarketplace;

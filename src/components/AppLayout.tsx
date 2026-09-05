@@ -23,7 +23,6 @@ export default function AppLayout({ children, currentPath }: AppLayoutProps) {
 
       {/* Sidebar */}
       <Sidebar
-        currentPath={currentPath}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
